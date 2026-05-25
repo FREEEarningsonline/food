@@ -134,6 +134,8 @@
             
             <!-- HOME VIEW -->
             <section id="view-home" class="space-y-4">
+                
+                <!-- Target Language Selector -->
                 <div class="flex justify-between items-center bg-slate-800/40 p-2.5 rounded-xl border border-slate-800">
                     <span class="text-xs font-semibold text-slate-300">Target Language:</span>
                     <select id="lang-selector" class="bg-slate-950 border border-slate-800 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-purple max-w-[180px]">
@@ -152,6 +154,18 @@
                         <option value="Spanish">Spanish (Español)</option>
                         <option value="French">French (Français)</option>
                         <option value="German">German (Deutsch)</option>
+                    </select>
+                </div>
+
+                <!-- NEW AI Engine Selector Dropdown -->
+                <div class="flex justify-between items-center bg-slate-800/40 p-2.5 rounded-xl border border-slate-800">
+                    <span class="text-xs font-semibold text-slate-300">AI Engine:</span>
+                    <select id="model-selector" class="bg-slate-950 border border-slate-800 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-purple max-w-[180px]">
+                        <option value="google/gemini-3.1-pro-preview">Gemini 3.1 Pro</option>
+                        <option value="openai/gpt-chat-latest">GPT Chat Latest</option>
+                        <option value="deepseek/deepseek-v4-flash:free">DeepSeek v4 Flash (Free)</option>
+                        <option value="openrouter/auto">OpenRouter Auto</option>
+                        <option value="openai/gpt-5.5-pro">GPT 5.5 Pro</option>
                     </select>
                 </div>
 
@@ -426,7 +440,7 @@
                 </button>
             </section>
 
-            <!-- SECURE DYNAMIC ADMIN PANEL -->
+            <!-- SECURE DYNAMIC ADMIN PANEL (Upgraded for Multi-Keys management) -->
             <section id="view-admin" class="hidden space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <h3 class="font-extrabold text-sm text-yellow-500 tracking-wider uppercase flex items-center gap-1.5">
@@ -435,16 +449,37 @@
                     <button id="btn-close-admin" class="text-xs text-slate-500 hover:text-slate-300">Exit Admin</button>
                 </div>
 
-                <!-- API Key Manager (No Hardcoding) -->
-                <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                <!-- API Key Manager for All Selected Models -->
+                <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3.5">
                     <h4 class="text-xs font-bold text-slate-300 flex items-center gap-1">
-                        <span class="material-icons-round text-xs text-purple-400">vpn_key</span> OpenRouter API Key
+                        <span class="material-icons-round text-xs text-purple-400">vpn_key</span> Manage API Keys
                     </h4>
-                    <p class="text-[10px] text-slate-400">Is key ko aap database mein save karenge taake GitHub isay leak/block na kar sake:</p>
-                    <div class="space-y-2">
-                        <input type="password" id="admin-input-key" placeholder="Enter OpenRouter API Key (sk-or-v1-...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl text-xs px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-brand-purple">
-                        <button id="btn-save-admin-key" class="w-full bg-brand-purple hover:bg-brand-purple/95 text-white text-xs font-bold py-2 rounded-xl">
-                            Save Key to Firebase RTDB
+                    <p class="text-[9px] text-slate-400 leading-relaxed">Har model ke liye apni makhsoos OpenRouter keys enter karein taake user model tabdeel kare toh wahi key use ho:</p>
+                    
+                    <div class="space-y-3 text-xs">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] text-slate-400 font-semibold">Gemini 3.1 Pro Key</label>
+                            <input type="password" id="admin-key-gemini" placeholder="Enter Gemini 3.1 Key (sk-or-...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] text-slate-400 font-semibold">GPT Chat Latest Key</label>
+                            <input type="password" id="admin-key-gpt-latest" placeholder="Enter GPT Chat Key (sk-or-...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] text-slate-400 font-semibold">DeepSeek v4 Flash Key</label>
+                            <input type="password" id="admin-key-deepseek" placeholder="Enter DeepSeek Key (sk-or-...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] text-slate-400 font-semibold">OpenRouter Auto Key</label>
+                            <input type="password" id="admin-key-auto" placeholder="Enter OpenRouter Auto Key (sk-or-...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] text-slate-400 font-semibold">GPT 5.5 Pro Key</label>
+                            <input type="password" id="admin-key-gpt5" placeholder="Enter GPT 5.5 Key (sk-or-...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none">
+                        </div>
+
+                        <button id="btn-save-admin-keys" class="w-full bg-brand-purple hover:bg-brand-purple/95 text-white text-xs font-bold py-2.5 rounded-xl">
+                            Save All Keys to Firebase RTDB
                         </button>
                     </div>
                 </div>
@@ -528,6 +563,7 @@
             bodyTheme: document.getElementById('body-theme'),
             appContainer: document.getElementById('app-container'),
             langSelector: document.getElementById('lang-selector'),
+            modelSelector: document.getElementById('model-selector'), // Model Selector element added
             
             authEmail: document.getElementById('auth-email'),
             authPassword: document.getElementById('auth-password'),
@@ -597,8 +633,14 @@
             // Admin Panel Controls
             btnTriggerAdmin: document.getElementById('btn-trigger-admin'),
             btnCloseAdmin: document.getElementById('btn-close-admin'),
-            adminInputKey: document.getElementById('admin-input-key'),
-            btnSaveAdminKey: document.getElementById('btn-save-admin-key'),
+            
+            // Dynamic Multiple Admin Key inputs mapped
+            adminKeyGemini: document.getElementById('admin-key-gemini'),
+            adminKeyGptLatest: document.getElementById('admin-key-gpt-latest'),
+            adminKeyDeepseek: document.getElementById('admin-key-deepseek'),
+            adminKeyAuto: document.getElementById('admin-key-auto'),
+            adminKeyGpt5: document.getElementById('admin-key-gpt5'),
+            btnSaveAdminKeys: document.getElementById('btn-save-admin-keys'),
             adminPendingList: document.getElementById('admin-pending-list')
         };
 
@@ -606,11 +648,15 @@
         let compressedImageBase64 = null;
         let activeSelectedTopup = null;
 
-        // Secure Real-Time Config from Firebase Realtime Database
-        let secureDatabaseApiKey = "";
+        // Secure Real-Time Config Object from Database (Stores separate keys)
+        let secureKeysConfig = {
+            "google/gemini-3.1-pro-preview": "",
+            "openai/gpt-chat-latest": "",
+            "deepseek/deepseek-v4-flash:free": "",
+            "openrouter/auto": "",
+            "openai/gpt-5.5-pro": ""
+        };
 
-        // API Configurations (Gemini 3.1 Pro Preview as requested)
-        const API_MODEL = "google/gemini-3.1-pro-preview";
         const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
         function initApp() {
@@ -624,12 +670,23 @@
             loadGlobalConfig();
         }
 
-        // Real-Time Listener to pull Secure API Key from Database
+        // Real-Time Listener to load all distinct API Keys from database
         function loadGlobalConfig() {
-            onValue(ref(db, 'config/openrouter_api_key'), (snapshot) => {
-                secureDatabaseApiKey = snapshot.val() || "";
-                if (secureDatabaseApiKey) {
-                    DOM.adminInputKey.value = secureDatabaseApiKey;
+            onValue(ref(db, 'config/keys'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    secureKeysConfig["google/gemini-3.1-pro-preview"] = data.gemini_3_1_pro || "";
+                    secureKeysConfig["openai/gpt-chat-latest"] = data.gpt_chat_latest || "";
+                    secureKeysConfig["deepseek/deepseek-v4-flash:free"] = data.deepseek_v4 || "";
+                    secureKeysConfig["openrouter/auto"] = data.openrouter_auto || "";
+                    secureKeysConfig["openai/gpt-5.5-pro"] = data.gpt_5_5_pro || "";
+
+                    // Populate Admin inputs
+                    DOM.adminKeyGemini.value = secureKeysConfig["google/gemini-3.1-pro-preview"];
+                    DOM.adminKeyGptLatest.value = secureKeysConfig["openai/gpt-chat-latest"];
+                    DOM.adminKeyDeepseek.value = secureKeysConfig["deepseek/deepseek-v4-flash:free"];
+                    DOM.adminKeyAuto.value = secureKeysConfig["openrouter/auto"];
+                    DOM.adminKeyGpt5.value = secureKeysConfig["openai/gpt-5.5-pro"];
                 }
             });
         }
@@ -639,9 +696,7 @@
         // ==========================================
         function setupAdminFunctionality() {
             DOM.btnTriggerAdmin.addEventListener('click', () => {
-                // Double check if the logged in user is actually the admin
                 if (appState.currentUser && appState.currentUser.email === "kazimmustafa38@gmail.com") {
-                    // Hide other views & display admin section
                     Object.keys(DOM.views).forEach(vId => {
                         DOM.views[vId].classList.add('hidden');
                     });
@@ -656,19 +711,21 @@
                 DOM.views['view-profile'].classList.remove('hidden');
             });
 
-            // Save Key securely to Database config node
-            DOM.btnSaveAdminKey.addEventListener('click', async () => {
-                const keyVal = DOM.adminInputKey.value.trim();
-                if (!keyVal.startsWith("sk-or-v1-")) {
-                    alert("Please enter a valid OpenRouter API Key starting with 'sk-or-v1-'");
-                    return;
-                }
+            // Save all distinct keys securely to Database config node
+            DOM.btnSaveAdminKeys.addEventListener('click', async () => {
+                const keysToSave = {
+                    gemini_3_1_pro: DOM.adminKeyGemini.value.trim(),
+                    gpt_chat_latest: DOM.adminKeyGptLatest.value.trim(),
+                    deepseek_v4: DOM.adminKeyDeepseek.value.trim(),
+                    openrouter_auto: DOM.adminKeyAuto.value.trim(),
+                    gpt_5_5_pro: DOM.adminKeyGpt5.value.trim()
+                };
                 
                 try {
-                    await set(ref(db, 'config/openrouter_api_key'), keyVal);
-                    alert("API Key saved successfully inside Firebase Realtime Database!");
+                    await set(ref(db, 'config/keys'), keysToSave);
+                    alert("All API Keys saved successfully inside Firebase Realtime Database!");
                 } catch (e) {
-                    alert("Error saving API Key to Database: " + e.message);
+                    alert("Error saving API Keys: " + e.message);
                 }
             });
 
@@ -718,19 +775,16 @@
                         const planName = btn.dataset.plan;
 
                         try {
-                            // 1. Fetch current credits of targeted user
                             const userSnap = await get(ref(db, 'users/' + userUid));
                             if (userSnap.exists()) {
                                 const currentCredits = userSnap.val().credits || 0;
                                 const newCredits = currentCredits + creditsToAdd;
 
-                                // 2. Update user parameters
                                 await update(ref(db, 'users/' + userUid), {
                                     credits: newCredits,
                                     activePlan: planName
                                 });
 
-                                // 3. Push log to user transactions node
                                 await push(ref(db, 'users/' + userUid + '/transactions'), {
                                     title: `Deposit Package Approved (${planName})`,
                                     date: new Date().toLocaleString(),
@@ -739,7 +793,6 @@
                                 });
                             }
 
-                            // 4. Update global deposit status to Approved
                             await update(ref(db, 'global_deposits/' + depId), {
                                 status: "Approved"
                             });
@@ -791,11 +844,9 @@
 
                 try {
                     if (isAuthSignUpMode) {
-                        // User Sign Up
                         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
                         const user = userCredential.user;
                         
-                        // Set Default parameters to Database node
                         await set(ref(db, 'users/' + user.uid), {
                             displayName: email.split('@')[0],
                             email: email,
@@ -803,7 +854,6 @@
                             activePlan: 'Free'
                         });
 
-                        // Create an initial entry on transactions list
                         await push(ref(db, 'users/' + user.uid + '/transactions'), {
                             title: 'Welcome Reward Credits',
                             date: new Date().toLocaleString(),
@@ -811,7 +861,6 @@
                             type: 'plus'
                         });
                     } else {
-                        // User Sign In
                         await signInWithEmailAndPassword(auth, email, pass);
                     }
                 } catch (err) {
@@ -829,7 +878,6 @@
                     const result = await signInWithPopup(auth, provider);
                     const user = result.user;
 
-                    // Check if node exists, if not initialize default
                     const userSnap = await get(ref(db, 'users/' + user.uid));
                     if (!userSnap.exists()) {
                         await set(ref(db, 'users/' + user.uid), {
@@ -885,7 +933,6 @@
                         DOM.btnTriggerAdmin.classList.add('hidden');
                     }
 
-                    // Real-time Dynamic Synchronizations
                     onValue(ref(db, 'users/' + user.uid + '/credits'), (snapshot) => {
                         appState.credits = snapshot.val() || 0;
                         refreshCreditsDisplay();
@@ -1066,7 +1113,7 @@
         }
 
         // ==========================================
-        // Live Gemini 3.1 Pro Preview API with OpenRouter
+        // Live API Execution with Dynamic Key/Model Routing
         // ==========================================
         DOM.btnAnalyze.addEventListener('click', async () => {
             if (appState.credits < 2) {
@@ -1085,14 +1132,13 @@
             try {
                 const resultText = await callGeminiAPI(compressedImageBase64);
                 
-                // Deduct credits globally
                 const cost = 2;
                 if (!appState.isGuest && appState.currentUser) {
                     await update(ref(db, 'users/' + appState.currentUser.uid), {
                         credits: appState.credits - cost
                     });
                     await push(ref(db, 'users/' + appState.currentUser.uid + '/transactions'), {
-                        title: 'FoodVision AI Recipe Scan (gemini-3.1-pro)',
+                        title: `FoodVision AI Scan (${DOM.modelSelector.value.split('/')[1]})`,
                         date: new Date().toLocaleString(),
                         val: `-${cost}`,
                         type: 'minus'
@@ -1108,7 +1154,6 @@
                 console.error("API error:", err);
                 alert("API Error: " + err.message);
                 
-                // Fallback offline simulation execution
                 alert("Running offline simulation mode...");
                 const fallbackText = simulateAIService();
                 parseAndDisplayAIResult(fallbackText);
@@ -1120,14 +1165,16 @@
 
         async function callGeminiAPI(base64Image) {
             const targetLang = DOM.langSelector.value;
-            const activeKey = secureDatabaseApiKey;
+            
+            // Dynamic selection of model and key based on homepage dropdown selection
+            const selectedModel = DOM.modelSelector.value;
+            const activeKey = secureKeysConfig[selectedModel];
             
             if (!activeKey) {
-                alert("Alert: Database mein OpenRouter API key save nahi hai. Pehle Admin panel se API Key save karein.");
-                throw new Error("Missing API Key configuration in database.");
+                alert(`Alert: Database mein is Model (${selectedModel}) ke liye API key save nahi hai. Pehle Admin panel se API Key save karein.`);
+                throw new Error("Missing API Key configuration in database for selected model.");
             }
             
-            // Highly optimized instruction prompt forcing dynamically selected language with zero brand/software traces
             let systemPrompt = `You are a professional cooking assistant and food expert. Analyze the food ingredients in this image.
             
 Important Rules:
@@ -1173,7 +1220,7 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
                     "X-Title": "FoodVision AI"
                 },
                 body: JSON.stringify({
-                    "model": API_MODEL,
+                    "model": selectedModel,
                     "messages": [
                         {
                             "role": "user",
@@ -1191,7 +1238,7 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
                             ]
                         }
                     ],
-                    "max_tokens": 800, // Balanced limit to provide rich steps within the strict context ceiling
+                    "max_tokens": 800, // Safe balanced token ceiling
                     "max_completion_tokens": 800
                 })
             });
@@ -1233,7 +1280,6 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
             let addons = "--";
 
             try {
-                // Strip markdown wraps if present and parse
                 const cleanedText = cleanJsonString(rawText);
                 const data = JSON.parse(cleanedText);
 
@@ -1257,7 +1303,6 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
 
             } catch (e) {
                 console.error("JSON parsing failed, fallback to raw text legacy parsing:", e);
-                // Fallback line-by-line parsing if AI outputs plain text instead of JSON
                 recipeHTML = `<p class="whitespace-pre-line">${rawText}</p>`;
                 ingredientsHTML = "<li>Visible items in the picture</li>";
                 tipsHTML = "<li>Follow standard recipe safety and instructions.</li>";
@@ -1289,7 +1334,6 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
-            // Save details locally or to database
             if (!appState.isGuest && appState.currentUser) {
                 push(ref(db, 'users/' + appState.currentUser.uid + '/scans'), newScan);
             } else {
@@ -1360,7 +1404,6 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
                 });
             });
 
-            // Submit dynamic verification request directly to Firebase Realtime Database
             DOM.btnTxSubmit.addEventListener('click', async () => {
                 const txId = DOM.txInput.value.trim();
                 if (txId.length < 8) {
@@ -1378,7 +1421,6 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
                 DOM.depositPanel.classList.add('hidden');
 
                 try {
-                    // Push deposit data directly into database queue
                     await set(ref(db, 'global_deposits/' + txId), {
                         uid: appState.currentUser.uid,
                         email: appState.currentUser.email || "No Email",
@@ -1390,7 +1432,6 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
                         timestamp: new Date().toLocaleString()
                     });
                     
-                    // Create pending status in user's transactional logs
                     await push(ref(db, 'users/' + appState.currentUser.uid + '/transactions'), {
                         title: `Deposit Verification Pending (TxID: ${txId})`,
                         date: new Date().toLocaleString(),
@@ -1505,7 +1546,6 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
                     DOM.imagePreview.src = scan.image;
                     DOM.previewContainer.classList.remove('hidden');
                     
-                    // Trigger JSON Parsing on click reload
                     parseAndDisplayAIResult(scan.recipe);
 
                     DOM.navTabs[0].click();
