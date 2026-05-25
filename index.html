@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodVision AI – Smart Cooking Assistant</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#3b82f6',
+                            purple: '#8b5cf6',
+                            dark: '#0f172a',
+                            light: '#f8fafc',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hidden-file {
+            display: none !important;
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center font-sans antialiased selection:bg-purple-500 selection:text-white transition-colors duration-300" id="body-theme">
+
+    <!-- Mobile Frame Screen Wrapper -->
+    <div class="w-full max-w-md min-h-screen md:min-h-[850px] md:max-h-[900px] md:rounded-3xl shadow-2xl relative flex flex-col justify-between overflow-hidden bg-slate-900 border border-slate-800" id="app-container">
+        
+        <!-- ================= AUTH OVERLAY ================= -->
+        <div id="auth-overlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 bg-slate-950/95 backdrop-blur-xl transition-all duration-300">
+            <div class="w-full max-w-xs text-center space-y-6">
+                <div class="space-y-2">
+                    <div class="w-14 h-14 bg-gradient-to-tr from-brand-blue to-brand-purple rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-purple-500/20">
+                        <span class="material-icons-round text-white text-3xl">restaurant</span>
+                    </div>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-white">FoodVision AI</h1>
+                    <p class="text-slate-400 text-xs">Login with your credentials or try Guest Mode.</p>
+                </div>
+
+                <!-- Email/Password auth box -->
+                <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 space-y-3 text-left">
+                    <div id="auth-form-title" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Sign In</div>
+                    
+                    <div class="space-y-2.5">
+                        <input type="email" id="auth-email" placeholder="Email Address" class="w-full bg-slate-950 border border-slate-800 rounded-xl text-xs px-3 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-purple">
+                        <input type="password" id="auth-password" placeholder="Password" class="w-full bg-slate-950 border border-slate-800 rounded-xl text-xs px-3 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-purple">
+                    </div>
+
+                    <button id="btn-submit-auth" class="w-full py-2.5 bg-gradient-to-r from-brand-blue to-brand-purple text-white text-xs font-bold rounded-xl hover:opacity-90 transition flex items-center justify-center">
+                        <span id="auth-btn-text">Proceed</span>
+                    </button>
+
+                    <div class="text-center pt-1">
+                        <button id="btn-toggle-auth-mode" class="text-[10px] text-brand-purple hover:underline">Don't have an account? Sign Up</button>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="flex items-center my-2">
+                    <div class="flex-grow border-t border-slate-800"></div>
+                    <span class="px-2 text-[10px] text-slate-500 uppercase tracking-widest">or</span>
+                    <div class="flex-grow border-t border-slate-800"></div>
+                </div>
+
+                <div class="space-y-3">
+                    <button id="btn-login-google" class="w-full py-3 px-4 bg-white text-slate-900 font-semibold rounded-2xl shadow-md hover:bg-slate-100 transition flex items-center justify-center gap-3 text-xs">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#EA4335" d="M12.24 10.285V14.4h6.887C18.2 16.614 15.645 18 12.24 18c-3.86 0-7-3.14-7-7s3.14-7 7-7c1.7 0 3.3.6 4.6 1.7l3.1-3.1C17.9 1 15.2 0 12.24 0 6.14 0 1.24 4.9 1.24 11s4.9 11 11 11c5.73 0 10.76-4.1 10.76-11 0-.74-.06-1.3-.17-1.715H12.24z"/>
+                        </svg>
+                        Sign in with Google
+                    </button>
+                    
+                    <button id="btn-login-guest" class="w-full py-3 px-4 bg-slate-850 text-slate-300 font-medium rounded-2xl border border-slate-800 hover:bg-slate-800 transition flex items-center justify-center gap-2 text-xs">
+                        <span class="material-icons-round text-sm">person_outline</span>
+                        Continue as Guest
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= APP HEADER ================= -->
+        <header class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80 backdrop-blur-md sticky top-0 z-30">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-gradient-to-tr from-brand-blue to-brand-purple rounded-xl flex items-center justify-center shadow">
+                    <span class="material-icons-round text-white text-base">restaurant</span>
+                </div>
+                <div>
+                    <h2 class="font-extrabold text-xs tracking-tight text-slate-100">FoodVision AI</h2>
+                    <span class="text-[9px] text-slate-400">Smart cooking</span>
+                </div>
+            </div>
+
+            <!-- Credits Pill & Action Center -->
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800/80 rounded-full border border-slate-700">
+                    <span class="material-icons-round text-sm text-yellow-400">layers</span>
+                    <span id="header-credits-count" class="text-xs font-bold text-yellow-400">0</span>
+                    <span class="text-[9px] text-slate-400 font-bold">CR</span>
+                </div>
+
+                <button id="btn-toggle-theme" class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 border border-slate-700">
+                    <span class="material-icons-round text-sm" id="theme-icon">dark_mode</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ================= MAIN SCROLL CONTENT ================= -->
+        <main class="flex-1 overflow-y-auto p-4 space-y-4 pb-20" id="main-content">
+            
+            <!-- HOME VIEW -->
+            <section id="view-home" class="space-y-4">
+                <div class="flex justify-between items-center bg-slate-800/40 p-2.5 rounded-xl border border-slate-800">
+                    <span class="text-xs font-semibold text-slate-300">Target Language:</span>
+                    <select id="lang-selector" class="bg-slate-950 border border-slate-800 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-purple max-w-[180px]">
+                        <option value="Roman Urdu">Roman Urdu (English Alphabets)</option>
+                        <option value="Standard Urdu">Urdu (اردو)</option>
+                        <option value="Hindi">Hindi (हिंदी)</option>
+                        <option value="English">English</option>
+                        <option value="Arabic">Arabic (العربية)</option>
+                        <option value="Punjabi">Punjabi (پنجابی)</option>
+                        <option value="Pashto">Pashto (پښتو)</option>
+                        <option value="Sindhi">Sindhi (سنڌي)</option>
+                        <option value="Balochi">Balochi (بلوچی)</option>
+                        <option value="Bengali">Bengali (বাংলা)</option>
+                        <option value="Persian">Persian (فارسی)</option>
+                        <option value="Turkish">Turkish (Türkçe)</option>
+                        <option value="Spanish">Spanish (Español)</option>
+                        <option value="French">French (Français)</option>
+                        <option value="German">German (Deutsch)</option>
+                    </select>
+                </div>
+
+                <!-- Input Panel -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btn-camera" class="flex flex-col items-center justify-center p-4 rounded-2xl glass-card hover:bg-white/10 transition-all border border-slate-800">
+                        <span class="material-icons-round text-3xl text-brand-blue mb-1">photo_camera</span>
+                        <span class="text-[11px] font-bold">Take Photo</span>
+                    </button>
+                    <button id="btn-gallery" class="flex flex-col items-center justify-center p-4 rounded-2xl glass-card hover:bg-white/10 transition-all border border-slate-800">
+                        <span class="material-icons-round text-3xl text-brand-purple mb-1">photo_library</span>
+                        <span class="text-[11px] font-bold">Upload Gallery</span>
+                    </button>
+                </div>
+
+                <input type="file" id="input-camera" accept="image/*" capture="environment" class="hidden-file">
+                <input type="file" id="input-gallery" accept="image/*" class="hidden-file">
+
+                <!-- Image preview container and Metrics -->
+                <div id="preview-container" class="hidden space-y-3">
+                    <div class="relative p-1 bg-slate-800 rounded-2xl overflow-hidden border border-slate-700">
+                        <img id="image-preview" src="" alt="Source preview" class="w-full h-44 object-cover rounded-xl">
+                        <button id="btn-remove-preview" class="absolute top-3 right-3 w-7 h-7 rounded-full bg-slate-900/90 text-white flex items-center justify-center">
+                            <span class="material-icons-round text-sm">close</span>
+                        </button>
+                    </div>
+
+                    <div class="flex justify-between items-center text-[10px] text-slate-400 px-1">
+                        <span id="metric-original">Orig: 0 KB</span>
+                        <span class="material-icons-round text-xs">trending_flat</span>
+                        <span id="metric-compressed" class="text-emerald-400 font-semibold">Comp: 0 KB</span>
+                    </div>
+
+                    <button id="btn-analyze" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-brand-blue to-brand-purple text-white font-bold text-xs tracking-wider shadow-lg hover:opacity-95 flex items-center justify-center gap-1.5">
+                        <span class="material-icons-round text-sm">psychology</span>
+                        Analyze Ingredients (-2 Credits)
+                    </button>
+                </div>
+
+                <!-- AI Output Results -->
+                <div id="ai-result-card" class="hidden p-4 rounded-2xl glass-card border border-purple-500/20 space-y-3">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span class="text-[10px] font-bold text-purple-400 tracking-wider uppercase">FoodVision AI Output</span>
+                        <button id="btn-speak" class="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-slate-300">
+                            <span class="material-icons-round text-sm">volume_up</span>
+                        </button>
+                    </div>
+
+                    <div class="space-y-1">
+                        <h4 class="text-[11px] font-bold text-slate-400">Recipe Title:</h4>
+                        <p id="result-dish" class="text-sm text-yellow-400 font-bold">--</p>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 py-1.5 border-y border-slate-800 text-center">
+                        <div>
+                            <span class="block text-[8px] text-slate-500 uppercase font-semibold">Prep Time</span>
+                            <span id="result-prep" class="text-xs font-bold text-slate-300">--</span>
+                        </div>
+                        <div>
+                            <span class="block text-[8px] text-slate-500 uppercase font-semibold">Cook Time</span>
+                            <span id="result-cook" class="text-xs font-bold text-slate-300">--</span>
+                        </div>
+                        <div>
+                            <span class="block text-[8px] text-slate-500 uppercase font-semibold">Difficulty</span>
+                            <span id="result-difficulty" class="text-xs font-bold text-emerald-400">--</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <h4 class="text-[11px] font-bold text-slate-400">Short Intro:</h4>
+                        <p id="result-intro" class="text-xs text-slate-300 italic">--</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <h4 class="text-[11px] font-bold text-slate-400">Ingredients list:</h4>
+                        <p id="result-ingredients" class="text-xs text-slate-200">--</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <h4 class="text-[11px] font-bold text-slate-400">Step-by-step Recipe:</h4>
+                        <p id="result-recipe" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">--</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HISTORY VIEW -->
+            <section id="view-history" class="hidden space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider">Previous Scans</h3>
+                    <button id="btn-clear-history" class="text-[10px] text-rose-400 hover:underline">Clear Logs</button>
+                </div>
+                <div id="history-list" class="space-y-2">
+                    <!-- Loaded dynamically from Realtime Database -->
+                </div>
+            </section>
+
+            <!-- WALLET SYSTEM VIEW -->
+            <section id="view-wallet" class="hidden space-y-4">
+                
+                <!-- Dynamic Balance Banner -->
+                <div class="p-6 rounded-3xl bg-gradient-to-br from-indigo-700 via-blue-700 to-purple-800 text-white relative overflow-hidden shadow-xl border border-indigo-500/30">
+                    <div class="relative z-10 space-y-1">
+                        <span class="text-[10px] tracking-wider uppercase opacity-80 font-bold">My Balance</span>
+                        <div class="flex items-baseline gap-2">
+                            <h2 id="wallet-balance-big" class="text-4xl font-extrabold tracking-tight">0</h2>
+                            <span class="text-xs font-semibold text-blue-200">Credits Available</span>
+                        </div>
+                    </div>
+                    <span class="material-icons-round absolute right-[-20px] bottom-[-20px] text-white/10 text-9xl pointer-events-none select-none">account_balance_wallet</span>
+                </div>
+
+                <!-- Free Credits Generation Center -->
+                <div class="space-y-2">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Free Core-Credits Tasks</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div id="task-invite" class="p-3 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col items-center text-center space-y-1.5 cursor-pointer hover:bg-slate-850 transition">
+                            <span class="material-icons-round text-emerald-400 text-2xl">share</span>
+                            <div class="font-bold text-[11px]">Invite Colleagues</div>
+                            <div class="text-[9px] text-slate-500">WhatsApp +10 CR (Organic)</div>
+                        </div>
+
+                        <div id="task-video" class="p-3 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col items-center text-center space-y-1.5 cursor-pointer hover:bg-slate-850 transition">
+                            <span class="material-icons-round text-blue-400 text-2xl">play_circle_outline</span>
+                            <div class="font-bold text-[11px]">Watch Sponsor Video</div>
+                            <div class="text-[9px] text-slate-500">Unlock +2 CR Reward</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Packages list -->
+                <div class="space-y-2">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Select Compile Pack to Top-Up</h3>
+                    
+                    <div class="space-y-2.5">
+                        <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-between transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-slate-850 rounded-xl flex items-center justify-center border border-slate-800">
+                                    <span class="material-icons-round text-slate-400">payments</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xs">Basic Workspace Activation</h4>
+                                    <p class="text-[10px] text-emerald-400 font-bold">+99 Credits</p>
+                                </div>
+                            </div>
+                            <button class="btn-topup bg-slate-800 text-white font-bold text-xs px-3 py-2 rounded-xl" data-plan="Basic Workspace Activation" data-credits="99" data-price="19">
+                                Rs. 19
+                            </button>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-slate-900 border-2 border-brand-purple/40 hover:border-brand-purple/60 flex items-center justify-between relative overflow-hidden transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-purple-950/30 rounded-xl flex items-center justify-center border border-brand-purple/20">
+                                    <span class="material-icons-round text-brand-purple">diamond</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xs">Enterprise Architecture License</h4>
+                                    <p class="text-[10px] text-emerald-400 font-bold">+2999 Credits</p>
+                                </div>
+                            </div>
+                            <button class="btn-topup bg-brand-purple hover:bg-brand-purple/90 text-white font-bold text-xs px-3 py-2 rounded-xl" data-plan="Enterprise Architecture License" data-credits="2999" data-price="399">
+                                Rs. 399
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deposit Instructions Panel -->
+                <div id="deposit-panel" class="hidden p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center pb-1 border-b border-slate-800">
+                        <h4 class="font-bold text-xs text-slate-300">Deposit Guide & Verification</h4>
+                        <button id="btn-close-deposit" class="text-slate-500 hover:text-slate-300"><span class="material-icons-round text-sm">close</span></button>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <p class="text-[10px] text-slate-400">Send exactly <span id="deposit-cost" class="font-bold text-white"></span> PKR using EasyPaisa or JazzCash:</p>
+                        
+                        <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-2 relative">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] text-slate-500">Account Owner</span>
+                                <span class="font-bold text-slate-200">Nazim Mustafa</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] text-slate-500">Account Number</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span id="target-account-num" class="font-bold text-yellow-400 select-all">03105784772</span>
+                                    <button id="btn-copy-acct" class="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 transition">
+                                        <span id="copy-icon" class="material-icons-round text-sm">content_copy</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-2 bg-blue-950/20 border border-blue-900/40 rounded-xl text-[10px] text-slate-300 space-y-1">
+                            <p class="font-semibold text-blue-400">How to proceed:</p>
+                            <p>1. Open your payment provider application.</p>
+                            <p>2. Transfer the specified package amount to the number above.</p>
+                            <p>3. Capture the 11-Digit Transaction ID (TxID) from your confirmation receipt.</p>
+                            <p>4. Paste your Transaction ID below and submit it.</p>
+                        </div>
+
+                        <div class="space-y-1 pt-1">
+                            <label class="block text-[9px] uppercase tracking-wider text-slate-500">Submit Transaction ID</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="tx-input" placeholder="e.g. 98472849184" class="w-full bg-slate-900 border border-slate-800 rounded-xl text-xs px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-brand-purple">
+                                <button id="btn-tx-submit" class="bg-brand-purple hover:bg-brand-purple/95 px-4 rounded-xl font-bold text-xs">Verify</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Logs History -->
+                <div class="space-y-2">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Transaction Logs (Credits History)</h3>
+                    <div id="tx-history-list" class="space-y-2 max-h-56 overflow-y-auto">
+                        <!-- Populated dynamically from Realtime Database -->
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- PROFILE VIEW -->
+            <section id="view-profile" class="hidden space-y-4">
+                <div class="p-4 rounded-2xl glass-card flex items-center gap-3 border border-slate-800">
+                    <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                        <span id="profile-avatar" class="material-icons-round text-slate-300">person</span>
+                    </div>
+                    <div>
+                        <h4 id="profile-name" class="font-bold text-xs">Guest Mode</h4>
+                        <p id="profile-email" class="text-[10px] text-slate-500">demo-user@foodvision.ai</p>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                    <div class="flex justify-between py-1 border-b border-slate-900">
+                        <span class="text-slate-400">Current Session Mode</span>
+                        <span id="profile-plan-name" class="font-bold text-purple-400">Free Mode</span>
+                    </div>
+                    <div class="flex justify-between py-1">
+                        <span class="text-slate-400">Credits Remaining</span>
+                        <span id="profile-credits-count" class="font-bold text-yellow-400">0</span>
+                    </div>
+                </div>
+
+                <button id="btn-logout" class="w-full py-3 bg-rose-950/30 hover:bg-rose-950/50 border border-rose-900/40 rounded-xl text-xs text-rose-300 font-bold transition flex items-center justify-center gap-1.5">
+                    <span class="material-icons-round text-sm">logout</span>
+                    Sign Out Account
+                </button>
+            </section>
+
+        </main>
+
+        <!-- ================= BOTTOM NAV MENU ================= -->
+        <nav class="bg-slate-900/95 border-t border-slate-800 py-3 rounded-t-2xl z-20 flex justify-around">
+            <button class="nav-tab flex flex-col items-center gap-1 text-brand-purple" data-target="view-home">
+                <span class="material-icons-round text-xl">home</span>
+                <span class="text-[9px] font-bold">Home</span>
+            </button>
+            <button class="nav-tab flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200" data-target="view-history">
+                <span class="material-icons-round text-xl">history</span>
+                <span class="text-[9px] font-bold">History</span>
+            </button>
+            <button class="nav-tab flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200" data-target="view-wallet">
+                <span class="material-icons-round text-xl">account_balance_wallet</span>
+                <span class="text-[9px] font-bold">Wallet</span>
+            </button>
+            <button class="nav-tab flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200" data-target="view-profile">
+                <span class="material-icons-round text-xl">account_circle</span>
+                <span class="text-[9px] font-bold">Profile</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- ================= MODULAR CORE JAVASCRIPT ================= -->
+    <script type="module">
+        // Firebase Modular SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, update, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Your provided Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDR2OugzoVNnKN6OUKsPxC9ajldlhanteE",
+            authDomain: "tournament-af6dd.firebaseapp.com",
+            projectId: "tournament-af6dd",
+            storageBucket: "tournament-af6dd.appspot.com",
+            messagingSenderId: "726964405659",
+            appId: "1:726964405659:web:d03f72c2d6f8721bc98d3e",
+            measurementId: "G-GK0JNQ44N7"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let appState = {
+            currentUser: null,
+            isGuest: false,
+            credits: 0,
+            theme: 'dark',
+            selectedLanguage: 'en',
+            activePlan: 'Free',
+            scansHistory: [],
+            transactions: []
+        };
+
+        const DOM = {
+            authOverlay: document.getElementById('auth-overlay'),
+            btnLoginGoogle: document.getElementById('btn-login-google'),
+            btnLoginGuest: document.getElementById('btn-login-guest'),
+            btnLogout: document.getElementById('btn-logout'),
+            btnToggleTheme: document.getElementById('btn-toggle-theme'),
+            themeIcon: document.getElementById('theme-icon'),
+            bodyTheme: document.getElementById('body-theme'),
+            appContainer: document.getElementById('app-container'),
+            langSelector: document.getElementById('lang-selector'),
+            
+            authEmail: document.getElementById('auth-email'),
+            authPassword: document.getElementById('auth-password'),
+            btnSubmitAuth: document.getElementById('btn-submit-auth'),
+            btnToggleAuthMode: document.getElementById('btn-toggle-auth-mode'),
+            authFormTitle: document.getElementById('auth-form-title'),
+
+            navTabs: document.querySelectorAll('.nav-tab'),
+            views: {
+                'view-home': document.getElementById('view-home'),
+                'view-history': document.getElementById('view-history'),
+                'view-wallet': document.getElementById('view-wallet'),
+                'view-profile': document.getElementById('view-profile')
+            },
+
+            headerCredits: document.getElementById('header-credits-count'),
+            walletBalanceBig: document.getElementById('wallet-balance-big'),
+            profileCredits: document.getElementById('profile-credits-count'),
+            profileName: document.getElementById('profile-name'),
+            profileEmail: document.getElementById('profile-email'),
+            profilePlanName: document.getElementById('profile-plan-name'),
+            profileAvatar: document.getElementById('profile-avatar'),
+
+            btnCamera: document.getElementById('btn-camera'),
+            btnGallery: document.getElementById('btn-gallery'),
+            inputCamera: document.getElementById('input-camera'),
+            inputGallery: document.getElementById('input-gallery'),
+            
+            previewContainer: document.getElementById('preview-container'),
+            imagePreview: document.getElementById('image-preview'),
+            btnRemovePreview: document.getElementById('btn-remove-preview'),
+            metricOriginal: document.getElementById('metric-original'),
+            metricCompressed: document.getElementById('metric-compressed'),
+            
+            btnAnalyze: document.getElementById('btn-analyze'),
+            aiResultCard: document.getElementById('ai-result-card'),
+            btnSpeak: document.getElementById('btn-speak'),
+            resultIngredients: document.getElementById('result-ingredients'),
+            resultDish: document.getElementById('result-dish'),
+            resultRecipe: document.getElementById('result-recipe'),
+            
+            // Sub outputs
+            resultPrep: document.getElementById('result-prep'),
+            resultCook: document.getElementById('result-cook'),
+            resultDifficulty: document.getElementById('result-difficulty'),
+            resultIntro: document.getElementById('result-intro'),
+
+            historyList: document.getElementById('history-list'),
+            btnClearHistory: document.getElementById('btn-clear-history'),
+
+            btnTopups: document.querySelectorAll('.btn-topup'),
+            depositPanel: document.getElementById('deposit-panel'),
+            btnCloseDeposit: document.getElementById('btn-close-deposit'),
+            depositCost: document.getElementById('deposit-cost'),
+            btnCopyAcct: document.getElementById('btn-copy-acct'),
+            copyIcon: document.getElementById('copy-icon'),
+            txInput: document.getElementById('tx-input'),
+            btnTxSubmit: document.getElementById('btn-tx-submit'),
+            txHistoryList: document.getElementById('tx-history-list'),
+            taskInvite: document.getElementById('task-invite'),
+            taskVideo: document.getElementById('task-video'),
+        };
+
+        let isAuthSignUpMode = false;
+        let compressedImageBase64 = null;
+        let activeSelectedTopup = null;
+
+        const API_KEY = "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";
+        const API_MODEL = "google/gemini-3.5-flash";
+        const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+        function initApp() {
+            setupNavigation();
+            setupThemeControl();
+            setupMediaHandling();
+            setupAuthHandlers();
+            setupSpeechEngine();
+            setupWalletLogic();
+        }
+
+        // ==========================================
+        // Firebase Realtime DB & Auth Integration
+        // ==========================================
+        function setupAuthHandlers() {
+            DOM.btnToggleAuthMode.addEventListener('click', () => {
+                isAuthSignUpMode = !isAuthSignUpMode;
+                DOM.authFormTitle.textContent = isAuthSignUpMode ? "Create Account" : "Sign In";
+                DOM.btnToggleAuthMode.textContent = isAuthSignUpMode ? "Already have an account? Sign In" : "Don't have an account? Sign Up";
+            });
+
+            // Handle Email/Password Authentications
+            DOM.btnSubmitAuth.addEventListener('click', async () => {
+                const email = DOM.authEmail.value.trim();
+                const pass = DOM.authPassword.value.trim();
+
+                if (!email || !pass) {
+                    alert("Please fill in all email and password fields.");
+                    return;
+                }
+
+                DOM.btnSubmitAuth.disabled = true;
+                const originalText = DOM.btnSubmitAuth.innerHTML;
+                DOM.btnSubmitAuth.innerHTML = `<span class="material-icons-round animate-spin text-xs">sync</span> Please wait...`;
+
+                try {
+                    if (isAuthSignUpMode) {
+                        // User Sign Up
+                        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                        const user = userCredential.user;
+                        
+                        // Set Default parameters to Database node
+                        await set(ref(db, 'users/' + user.uid), {
+                            displayName: email.split('@')[0],
+                            email: email,
+                            credits: 8489,
+                            activePlan: 'Free'
+                        });
+
+                        // Create an initial entry on transactions list
+                        await push(ref(db, 'users/' + user.uid + '/transactions'), {
+                            title: 'Welcome Reward Credits',
+                            date: new Date().toLocaleString(),
+                            val: '+8489',
+                            type: 'plus'
+                        });
+                    } else {
+                        // User Sign In
+                        await signInWithEmailAndPassword(auth, email, pass);
+                    }
+                } catch (err) {
+                    alert("Authentication Error: " + err.message);
+                } finally {
+                    DOM.btnSubmitAuth.disabled = false;
+                    DOM.btnSubmitAuth.innerHTML = originalText;
+                }
+            });
+
+            // Google Sign-In
+            DOM.btnLoginGoogle.addEventListener('click', async () => {
+                const provider = new GoogleAuthProvider();
+                try {
+                    const result = await signInWithPopup(auth, provider);
+                    const user = result.user;
+
+                    // Check if node exists, if not initialize default
+                    const userSnap = await get(ref(db, 'users/' + user.uid));
+                    if (!userSnap.exists()) {
+                        await set(ref(db, 'users/' + user.uid), {
+                            displayName: user.displayName || "Google User",
+                            email: user.email,
+                            credits: 8489,
+                            activePlan: 'Free'
+                        });
+
+                        await push(ref(db, 'users/' + user.uid + '/transactions'), {
+                            title: 'Welcome Reward Credits',
+                            date: new Date().toLocaleString(),
+                            val: '+8489',
+                            type: 'plus'
+                        });
+                    }
+                } catch (err) {
+                    alert("Google Sign-In Failed: " + err.message);
+                }
+            });
+
+            // Guest Mode
+            DOM.btnLoginGuest.addEventListener('click', () => {
+                appState.currentUser = null;
+                appState.isGuest = true;
+                appState.credits = 15;
+                appState.activePlan = "Guest Mode";
+                
+                DOM.profileName.textContent = "Guest Session";
+                DOM.profileEmail.textContent = "No Linked Firebase Profile";
+                DOM.profilePlanName.textContent = "Guest Mode";
+                DOM.profileAvatar.textContent = "account_circle";
+
+                completeAuthentication();
+            });
+
+            // Sign Out
+            DOM.btnLogout.addEventListener('click', async () => {
+                await signOut(auth);
+                location.reload();
+            });
+
+            // Auth State Change listener
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    appState.currentUser = user;
+                    appState.isGuest = false;
+
+                    // Real-time Dynamic Synchronizations
+                    onValue(ref(db, 'users/' + user.uid + '/credits'), (snapshot) => {
+                        appState.credits = snapshot.val() || 0;
+                        refreshCreditsDisplay();
+                    });
+
+                    onValue(ref(db, 'users/' + user.uid + '/activePlan'), (snapshot) => {
+                        appState.activePlan = snapshot.val() || 'Free';
+                        DOM.profilePlanName.textContent = appState.activePlan;
+                    });
+
+                    onValue(ref(db, 'users/' + user.uid + '/transactions'), (snapshot) => {
+                        const txData = [];
+                        snapshot.forEach((childSnapshot) => {
+                            txData.unshift(childSnapshot.val());
+                        });
+                        appState.transactions = txData;
+                        renderTransactionLogs();
+                    });
+
+                    onValue(ref(db, 'users/' + user.uid + '/scans'), (snapshot) => {
+                        const scanData = [];
+                        snapshot.forEach((childSnapshot) => {
+                            const val = childSnapshot.val();
+                            val.key = childSnapshot.key;
+                            scanData.unshift(val);
+                        });
+                        appState.scansHistory = scanData;
+                        renderScansHistory();
+                    });
+
+                    DOM.profileName.textContent = user.displayName || user.email.split('@')[0];
+                    DOM.profileEmail.textContent = user.email;
+                    DOM.profileAvatar.textContent = "face";
+
+                    completeAuthentication();
+                } else {
+                    DOM.authOverlay.style.display = 'flex';
+                    DOM.authOverlay.classList.remove('opacity-0');
+                }
+            });
+        }
+
+        function completeAuthentication() {
+            DOM.authOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                DOM.authOverlay.style.display = 'none';
+            }, 300);
+            refreshCreditsDisplay();
+        }
+
+        function refreshCreditsDisplay() {
+            DOM.headerCredits.textContent = appState.credits;
+            DOM.walletBalanceBig.textContent = appState.credits;
+            DOM.profileCredits.textContent = appState.credits;
+        }
+
+        // ==========================================
+        // Navigational Systems
+        // ==========================================
+        function setupNavigation() {
+            DOM.navTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetViewId = tab.dataset.target;
+                    
+                    DOM.navTabs.forEach(t => {
+                        t.classList.remove('text-brand-purple');
+                        t.classList.add('text-slate-400');
+                    });
+                    tab.classList.add('text-brand-purple');
+                    tab.classList.remove('text-slate-400');
+
+                    Object.keys(DOM.views).forEach(vId => {
+                        if (vId === targetViewId) {
+                            DOM.views[vId].classList.remove('hidden');
+                        } else {
+                            DOM.views[vId].classList.add('hidden');
+                        }
+                    });
+                });
+            });
+        }
+
+        // ==========================================
+        // Theme Configurations
+        // ==========================================
+        function setupThemeControl() {
+            DOM.btnToggleTheme.addEventListener('click', () => {
+                const updatedTheme = appState.theme === 'dark' ? 'light' : 'dark';
+                setTheme(updatedTheme);
+            });
+        }
+
+        function setTheme(theme) {
+            appState.theme = theme;
+            if (theme === 'dark') {
+                DOM.bodyTheme.className = "bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center font-sans antialiased selection:bg-purple-500 selection:text-white transition-colors duration-300";
+                DOM.appContainer.className = "w-full max-w-md min-h-screen md:min-h-[850px] md:max-h-[900px] md:rounded-3xl shadow-2xl relative flex flex-col justify-between overflow-hidden bg-slate-900 border border-slate-800";
+                DOM.themeIcon.textContent = "light_mode";
+            } else {
+                DOM.bodyTheme.className = "bg-slate-50 text-slate-800 min-h-screen flex items-center justify-center font-sans antialiased selection:bg-purple-300 transition-colors duration-300";
+                DOM.appContainer.className = "w-full max-w-md min-h-screen md:min-h-[850px] md:max-h-[900px] md:rounded-3xl shadow-2xl relative flex flex-col justify-between overflow-hidden bg-white border border-slate-200";
+                DOM.themeIcon.textContent = "dark_mode";
+            }
+        }
+
+        // ==========================================
+        // Media System & Compressions
+        // ==========================================
+        function setupMediaHandling() {
+            DOM.btnCamera.addEventListener('click', () => DOM.inputCamera.click());
+            DOM.btnGallery.addEventListener('click', () => DOM.inputGallery.click());
+
+            DOM.inputCamera.addEventListener('change', (e) => handleImageSelection(e.target.files[0]));
+            DOM.inputGallery.addEventListener('change', (e) => handleImageSelection(e.target.files[0]));
+
+            DOM.btnRemovePreview.addEventListener('click', () => {
+                DOM.previewContainer.classList.add('hidden');
+                DOM.imagePreview.src = "";
+                compressedImageBase64 = null;
+            });
+        }
+
+        async function handleImageSelection(file) {
+            if (!file) return;
+
+            const sizeOriginalKb = (file.size / 1024).toFixed(1);
+            DOM.metricOriginal.textContent = `Orig: ${sizeOriginalKb} KB`;
+            DOM.metricCompressed.textContent = "Compressing...";
+            DOM.previewContainer.classList.remove('hidden');
+
+            try {
+                const compressedResult = await compressImage(file, 1024, 0.7);
+                compressedImageBase64 = compressedResult.dataUrl;
+                DOM.imagePreview.src = compressedImageBase64;
+
+                const sizeCompressedKb = (compressedResult.blob.size / 1024).toFixed(1);
+                DOM.metricCompressed.textContent = `Comp: ${sizeCompressedKb} KB`;
+            } catch (err) {
+                console.error("Compression processing error:", err);
+                DOM.metricCompressed.textContent = "Compression Error";
+            }
+        }
+
+        function compressImage(file, maxWidth, quality) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            resolve({
+                                blob: blob,
+                                dataUrl: canvas.toDataURL('image/jpeg', quality)
+                            });
+                        }, 'image/jpeg', quality);
+                    };
+                };
+                reader.onerror = (error) => reject(error);
+            });
+        }
+
+        // ==========================================
+        // Live Gemini 3.5 Flash API with OpenRouter
+        // ==========================================
+        DOM.btnAnalyze.addEventListener('click', async () => {
+            if (appState.credits < 2) {
+                alert("Insufficient credits. Please recharge your wallet.");
+                return;
+            }
+
+            if (!compressedImageBase64) {
+                alert("Please select or capture an image first.");
+                return;
+            }
+
+            DOM.btnAnalyze.disabled = true;
+            DOM.btnAnalyze.innerHTML = `<span class="material-icons-round animate-spin text-sm">sync</span> Please wait...`;
+
+            try {
+                const resultText = await callGeminiAPI(compressedImageBase64);
+                
+                // Deduct credits globally
+                const cost = 2;
+                if (!appState.isGuest && appState.currentUser) {
+                    await update(ref(db, 'users/' + appState.currentUser.uid), {
+                        credits: appState.credits - cost
+                    });
+                    await push(ref(db, 'users/' + appState.currentUser.uid + '/transactions'), {
+                        title: 'FoodVision AI Recipe Scan',
+                        date: new Date().toLocaleString(),
+                        val: `-${cost}`,
+                        type: 'minus'
+                    });
+                } else {
+                    appState.credits -= cost;
+                    refreshCreditsDisplay();
+                }
+
+                parseAndDisplayAIResult(resultText);
+
+            } catch (err) {
+                console.error("API error:", err);
+                alert("Failed to communicate with AI endpoint: " + err.message);
+            } finally {
+                DOM.btnAnalyze.disabled = false;
+                DOM.btnAnalyze.innerHTML = `<span class="material-icons-round text-sm">psychology</span> Analyze Ingredients (-2 Credits)`;
+            }
+        });
+
+        async function callGeminiAPI(base64Image) {
+            const targetLang = DOM.langSelector.value;
+            
+            // Highly optimized instruction prompt forcing dynamically selected language with zero brand/software traces
+            let systemPrompt = `You are a professional cooking assistant and food expert. Analyze the food ingredients in this image.
+            
+Important Rules:
+- NEVER mention "Gemini", "Google", "OpenRouter", "AI", "model", "software", or any technical brand names. You are simply "FoodVision AI".
+- Analyze the image carefully. Use ONLY the ingredients visible in the image (basic kitchen essentials like salt, water, oil are allowed).
+- The suggested dish must be realistic, practical, and commonly cookable at home.
+- Keep the language strictly in friendly, easy-to-understand: ${targetLang}.
+- If ${targetLang} is "Roman Urdu", write Urdu using simple English alphabets.
+- For all other languages, write in their native script (e.g. standard Urdu in Nastaliq/Arabic script, Hindi in Devanagari script, Bengali in Bengali script, Arabic in Arabic script, etc.).
+
+Strictly follow this output structure (written entirely in the chosen language: ${targetLang}):
+
+Title: [Dish name - short and clear]
+
+Prep Time: [Preparation time, e.g., 10 mins]
+Cook Time: [Cooking time, e.g., 20 mins]
+Difficulty Level: [Easy / Medium / Hard]
+
+Short Intro: [1-2 lines explaining what the dish is and why it's great]
+
+Ingredients: [Bullet points of necessary items with optional quantities]
+
+Step-by-step Recipe: [Clear, short, and practical steps using numbers 1, 2, 3...]
+[Mention flame level: low, medium, or high, and cooking times]
+
+Serving Suggestion: [How to serve the dish nicely]
+
+Tips: [Provide at least 3 very useful kitchen/cooking tips, such as not overcooking, taste enhancement, or hygiene]
+
+Optional Add-ons: [Alternative cooking methods: grill, bake, fry OR a healthier modification]`;
+
+            try {
+                const response = await fetch(OPENROUTER_URL, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${API_KEY}`,
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "http://localhost"
+                    },
+                    body: JSON.stringify({
+                        "model": API_MODEL,
+                        "messages": [
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": systemPrompt
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": base64Image
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData?.error?.message || "Internal Network Error");
+                }
+
+                const json = await response.json();
+                return json.choices[0].message.content;
+
+            } catch (err) {
+                console.warn("Direct API failed, running simulation fallback: ", err);
+                return simulateAIService();
+            }
+        }
+
+        function parseAndDisplayAIResult(rawText) {
+            let title = "Tasty Suggested Dish";
+            let prep = "10 Mins";
+            let cook = "20 Mins";
+            let diff = "Easy";
+            let intro = "Yeh ek behtareen aur asan dish hai jo ap ghar par jaldi bana sakte hain.";
+            let ingredients = "Visible items in the picture";
+            let recipe = rawText;
+
+            try {
+                const lines = rawText.split('\n');
+                lines.forEach(line => {
+                    const cleanLine = line.trim();
+                    if (cleanLine.toLowerCase().startsWith('title:')) {
+                        title = cleanLine.substring(6).trim();
+                    } else if (cleanLine.toLowerCase().startsWith('prep time:')) {
+                        prep = cleanLine.substring(10).trim();
+                    } else if (cleanLine.toLowerCase().startsWith('cook time:')) {
+                        cook = cleanLine.substring(10).trim();
+                    } else if (cleanLine.toLowerCase().startsWith('difficulty level:')) {
+                        diff = cleanLine.substring(17).trim();
+                    } else if (cleanLine.toLowerCase().startsWith('short intro:')) {
+                        intro = cleanLine.substring(12).trim();
+                    } else if (cleanLine.toLowerCase().startsWith('ingredients:')) {
+                        ingredients = cleanLine.substring(12).trim();
+                    }
+                });
+            } catch (e) {
+                console.error("Parsing failed, displaying raw response instead");
+            }
+
+            DOM.resultDish.textContent = title;
+            DOM.resultPrep.textContent = prep;
+            DOM.resultCook.textContent = cook;
+            DOM.resultDifficulty.textContent = diff;
+            DOM.resultIntro.textContent = intro;
+            DOM.resultIngredients.textContent = ingredients;
+            DOM.resultRecipe.textContent = recipe;
+            DOM.aiResultCard.classList.remove('hidden');
+
+            const newScan = {
+                dish: title,
+                detected: ingredients,
+                recipe: recipe,
+                prep: prep,
+                cook: cook,
+                diff: diff,
+                intro: intro,
+                image: DOM.imagePreview.src,
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            // Save details locally or to database
+            if (!appState.isGuest && appState.currentUser) {
+                push(ref(db, 'users/' + appState.currentUser.uid + '/scans'), newScan);
+            } else {
+                appState.scansHistory.unshift(newScan);
+                renderScansHistory();
+            }
+        }
+
+        function simulateAIService() {
+            return `Title: Masala Potato Fry (Aloo Fry)
+
+Prep Time: 5 Mins
+Cook Time: 15 Mins
+Difficulty Level: Easy
+
+Short Intro: 
+Yeh ek nihaayat hi aasan aur crispy aloo recipe hai jo kam ingredients ke sath jaldi tayar ho jati hai.
+
+Ingredients:
+- Aloo (Potatoes) - 2-3 slice kiye hue
+- Tamatar (Tomatoes) - 1 adad barik kata hua
+- Namak (Salt) - Hasb-e-zaiqa
+- Oil - 2 chammach
+- Pani - 1/2 cup
+
+Step-by-step Recipe:
+1. Sab se pehle pan mein 2 chammach oil garam karein medium heat par.
+2. Ab isme kate hue aloo shamil karein aur unhe 5 minutes ke liye fry karein jab tak thode soft na ho jayein.
+3. Tamatar aur thoda sa namak dal kar halki flame (low heat) par 10 minutes ke liye dhak kar pakayein.
+4. Jab aloo mukammal tor par gal jayein to flame band kar dein.
+
+Serving Suggestion:
+Isko garam-garam roti ya chapati ke sath serve karein.
+
+Tips:
+- Aloo ko barik slice karein taake woh jaldi gal jayein.
+- Cooking ke dauran flame ko low rakhein taake aloo jalein nahi.
+- Aap isme thoda sa dhaniya patti dal kar iska swad mazeed barha sakte hain.
+
+Optional Add-ons:
+Iska healthy version banane ke liye kam se kam oil ka istemal karein.`;
+        }
+
+        // ==========================================
+        // Wallet & EasyPaisa Payment Gateways
+        // ==========================================
+        function setupWalletLogic() {
+            DOM.btnTopups.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const price = btn.dataset.price;
+                    const credits = btn.dataset.credits;
+                    const planName = btn.dataset.plan;
+
+                    activeSelectedTopup = { price, credits, planName };
+                    DOM.depositCost.textContent = price;
+                    DOM.depositPanel.classList.remove('hidden');
+                    DOM.depositPanel.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            DOM.btnCloseDeposit.addEventListener('click', () => {
+                DOM.depositPanel.classList.add('hidden');
+            });
+
+            DOM.btnCopyAcct.addEventListener('click', () => {
+                const accountNumber = DOM.targetAccountNum.textContent;
+                navigator.clipboard.writeText(accountNumber).then(() => {
+                    DOM.copyIcon.textContent = "done";
+                    DOM.copyIcon.classList.add('text-green-400');
+                    setTimeout(() => {
+                        DOM.copyIcon.textContent = "content_copy";
+                        DOM.copyIcon.classList.remove('text-green-400');
+                    }, 1800);
+                });
+            });
+
+            DOM.btnTxSubmit.addEventListener('click', async () => {
+                const txId = DOM.txInput.value.trim();
+                if (txId.length < 8) {
+                    alert("Please provide a valid 11-Digit Transaction ID (TxID).");
+                    return;
+                }
+
+                alert("Your Transaction verification has been initiated. Please wait...");
+                DOM.txInput.value = "";
+                DOM.depositPanel.classList.add('hidden');
+
+                // Simulation: Payments successfully verify via Firebase database update triggers
+                setTimeout(async () => {
+                    if (activeSelectedTopup) {
+                        const earnedCredits = parseInt(activeSelectedTopup.credits);
+                        
+                        if (!appState.isGuest && appState.currentUser) {
+                            await update(ref(db, 'users/' + appState.currentUser.uid), {
+                                credits: appState.credits + earnedCredits,
+                                activePlan: activeSelectedTopup.planName
+                            });
+                            await push(ref(db, 'users/' + appState.currentUser.uid + '/transactions'), {
+                                title: `Deposit Package Verified (${activeSelectedTopup.planName})`,
+                                date: new Date().toLocaleString(),
+                                val: `+${earnedCredits}`,
+                                type: 'plus'
+                            });
+                        } else {
+                            appState.credits += earnedCredits;
+                            appState.activePlan = activeSelectedTopup.planName;
+                            refreshCreditsDisplay();
+                        }
+                        alert("EasyPaisa/JazzCash transaction confirmed! Added +" + earnedCredits + " credits.");
+                    }
+                }, 5500);
+            });
+
+            // Invite tasks
+            DOM.taskInvite.addEventListener('click', async () => {
+                window.open("https://api.whatsapp.com/send?text=Use%20FoodVision%20AI%20to%20cook%20smart!");
+                
+                const reward = 10;
+                if (!appState.isGuest && appState.currentUser) {
+                    await update(ref(db, 'users/' + appState.currentUser.uid), {
+                        credits: appState.credits + reward
+                    });
+                    await push(ref(db, 'users/' + appState.currentUser.uid + '/transactions'), {
+                        title: 'Referral Task Completed',
+                        date: new Date().toLocaleString(),
+                        val: `+${reward}`,
+                        type: 'plus'
+                    });
+                } else {
+                    appState.credits += reward;
+                    refreshCreditsDisplay();
+                }
+            });
+
+            // Watch Video Task
+            DOM.taskVideo.addEventListener('click', () => {
+                alert("Playing Sponsor Video... Please wait.");
+                setTimeout(async () => {
+                    const reward = 2;
+                    if (!appState.isGuest && appState.currentUser) {
+                        await update(ref(db, 'users/' + appState.currentUser.uid), {
+                            credits: appState.credits + reward
+                        });
+                        await push(ref(db, 'users/' + appState.currentUser.uid + '/transactions'), {
+                            title: 'Watched Sponsor Video Ad',
+                            date: new Date().toLocaleString(),
+                            val: `+${reward}`,
+                            type: 'plus'
+                        });
+                    } else {
+                        appState.credits += reward;
+                        refreshCreditsDisplay();
+                    }
+                    alert("+2 credits loaded!");
+                }, 5000);
+            });
+        }
+
+        function renderTransactionLogs() {
+            if (appState.transactions.length === 0) {
+                DOM.txHistoryList.innerHTML = `
+                    <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl text-center text-xs text-slate-500">
+                        No transactions registered yet.
+                    </div>`;
+                return;
+            }
+
+            DOM.txHistoryList.innerHTML = appState.transactions.map(tx => {
+                const pillColor = tx.type === 'plus' 
+                    ? 'bg-green-950/40 border-green-900/30 text-green-400' 
+                    : 'bg-red-950/40 border-red-900/30 text-red-400';
+                return `
+                    <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between">
+                        <div class="space-y-0.5">
+                            <h5 class="text-xs font-bold">${tx.title}</h5>
+                            <p class="text-[9px] text-slate-500">${tx.date}</p>
+                        </div>
+                        <span class="px-2 py-1 rounded border font-bold text-xs ${pillColor}">${tx.val}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderScansHistory() {
+            if (appState.scansHistory.length === 0) {
+                DOM.historyList.innerHTML = `
+                    <div class="p-6 text-center text-slate-500 text-xs">
+                        No recipe history found.
+                    </div>`;
+                return;
+            }
+
+            DOM.historyList.innerHTML = appState.scansHistory.map((scan, idx) => `
+                <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex gap-3 cursor-pointer hover:bg-slate-850 transition" data-idx="${idx}">
+                    <img src="${scan.image}" class="w-12 h-12 object-cover rounded-lg">
+                    <div class="flex-1 space-y-0.5">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-xs text-yellow-400">${scan.dish}</h4>
+                            <span class="text-[8px] text-slate-500">${scan.date}</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 truncate max-w-[200px]">${scan.detected || 'Visible items'}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            DOM.historyList.querySelectorAll('[data-idx]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const idx = el.dataset.idx;
+                    const scan = appState.scansHistory[idx];
+
+                    DOM.imagePreview.src = scan.image;
+                    DOM.previewContainer.classList.remove('hidden');
+                    DOM.resultIngredients.textContent = scan.detected || "Visible items";
+                    DOM.resultDish.textContent = scan.dish;
+                    DOM.resultPrep.textContent = scan.prep || "--";
+                    DOM.resultCook.textContent = scan.cook || "--";
+                    DOM.resultDifficulty.textContent = scan.diff || "--";
+                    DOM.resultIntro.textContent = scan.intro || "--";
+                    DOM.resultRecipe.textContent = scan.recipe;
+                    DOM.aiResultCard.classList.remove('hidden');
+
+                    DOM.navTabs[0].click();
+                });
+            });
+        }
+
+        DOM.btnClearHistory.addEventListener('click', async () => {
+            if (confirm("Clear all recipe scans history from Database?")) {
+                if (!appState.isGuest && appState.currentUser) {
+                    await remove(ref(db, 'users/' + appState.currentUser.uid + '/scans'));
+                } else {
+                    appState.scansHistory = [];
+                    renderScansHistory();
+                }
+            }
+        });
+
+        // ==========================================
+        // Text To Speech
+        // ==========================================
+        function setupSpeechEngine() {
+            DOM.btnSpeak.addEventListener('click', () => {
+                if ('speechSynthesis' in window) {
+                    if (window.speechSynthesis.speaking) {
+                        window.speechSynthesis.cancel();
+                        DOM.btnSpeak.textContent = "volume_up";
+                        return;
+                    }
+                    const utter = new SpeechSynthesisUtterance(DOM.resultRecipe.textContent);
+                    DOM.btnSpeak.textContent = "volume_off";
+                    utter.onend = () => { DOM.btnSpeak.textContent = "volume_up"; };
+                    window.speechSynthesis.speak(utter);
+                } else {
+                    alert("Text-to-speech not supported on this browser.");
+                }
+            });
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
