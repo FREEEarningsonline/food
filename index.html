@@ -95,7 +95,7 @@
                         Sign in with Google
                     </button>
                     
-                    <button id="btn-login-guest" class="w-full py-3 px-4 bg-slate-850 text-slate-300 font-medium rounded-2xl border border-slate-800 hover:bg-slate-800 transition flex items-center justify-center gap-2 text-xs">
+                    <button id="btn-login-guest" class="w-full py-3 px-4 bg-slate-850 text-slate-300 font-medium rounded-2xl border border-slate-800 hover:bg-slate-850 transition flex items-center justify-center gap-2 text-xs">
                         <span class="material-icons-round text-sm">person_outline</span>
                         Continue as Guest
                     </button>
@@ -1108,8 +1108,8 @@
             
 Important Rules:
 - NEVER mention "Gemini", "Google", "OpenRouter", "AI", "model", "software", or any technical brand names. You are simply "FoodVision AI".
-- Analyze the image carefully. Use ONLY the ingredients visible in the image (basic kitchen essentials like salt, water, oil are allowed).
-- The suggested dish must be realistic, practical, and commonly cookable at home.
+- Image ko carefully analyze karein aur sirf EK behtereen, practical aur realistic makhsoos subzi (dish) select karein jo di gayi tasveer ke mutabiq sabse behtar ban sakti ho (multiple options de kar user ko confuse mat karein, focus on exactly ONE makhsoos vegetable dish).
+- "Kese banti hai" iski bilkul mukammal, detailed, aur aasan tareeqa shamil karein (Step-by-step details bohot rich aur informative honi chahiyein taake banana bilkul aasan ho).
 - Keep the language strictly in friendly, easy-to-understand: ${targetLang}.
 - If ${targetLang} is "Roman Urdu", write Urdu using simple English alphabets.
 - For all other languages, write in their native script (e.g. standard Urdu in Nastaliq/Arabic script, Hindi in Devanagari script, Bengali in Bengali script, Arabic in Arabic script, etc.).
@@ -1124,10 +1124,10 @@ Difficulty Level: [Easy / Medium / Hard]
 
 Short Intro: [1-2 lines explaining what the dish is and why it's great]
 
-Ingredients: [Bullet points of necessary items with optional quantities]
+Ingredients: [Detailed list of necessary items with quantities, bullet points]
 
-Step-by-step Recipe: [Clear, short, and practical steps using numbers 1, 2, 3...]
-[Mention flame level: low, medium, or high, and cooking times]
+Step-by-step Recipe: [Bilkul detailed aur aasan tareeqa-e-kaar (how to make step-by-step in complete detail) using numbers 1, 2, 3...]
+[Mention flame level: low, medium, or high, and exact cooking times]
 
 Serving Suggestion: [How to serve the dish nicely]
 
@@ -1162,8 +1162,8 @@ Optional Add-ons: [Alternative cooking methods: grill, bake, fry OR a healthier 
                             ]
                         }
                     ],
-                    "max_tokens": 300, // Budget limit set at 300 to perfectly resolve credit threshold
-                    "max_completion_tokens": 300
+                    "max_tokens": 800, // Safe balanced limit to deliver deep details while remaining well under the 1,217 context budget
+                    "max_completion_tokens": 800
                 })
             });
 
