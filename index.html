@@ -384,6 +384,21 @@
                     </div>
                 </div>
 
+                <!-- API KEY CONFIGURATION MODULE (Anti-Block Feature for GitHub Pages) -->
+                <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                    <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider">Secure API Key Setup</h4>
+                    <p class="text-[10px] text-slate-400 leading-relaxed">
+                        GitHub par push karne se default key block ho jati hai. Apni personal active OpenRouter Key yahan safe save karein:
+                    </p>
+                    <div class="space-y-2">
+                        <input type="password" id="input-personal-key" placeholder="Enter OpenRouter API Key (sk-or-v1-...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl text-xs px-3 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-purple">
+                        <div class="flex gap-2">
+                            <button id="btn-save-key" class="bg-brand-purple hover:bg-brand-purple/90 text-white font-bold text-[10px] px-3 py-2 rounded-xl flex-1">Save Key</button>
+                            <button id="btn-reset-key" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-3 py-2 rounded-xl">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
                     <div class="flex justify-between py-1 border-b border-slate-900">
                         <span class="text-slate-400">Current Session Mode</span>
@@ -530,15 +545,30 @@
             txHistoryList: document.getElementById('tx-history-list'),
             taskInvite: document.getElementById('task-invite'),
             taskVideo: document.getElementById('task-video'),
+
+            // Personal API Key Management UI
+            inputPersonalKey: document.getElementById('input-personal-key'),
+            btnSaveKey: document.getElementById('btn-save-key'),
+            btnResetKey: document.getElementById('btn-reset-key')
         };
 
         let isAuthSignUpMode = false;
         let compressedImageBase64 = null;
         let activeSelectedTopup = null;
 
-        const API_KEY = "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";
+        // Default API Configuration
         const API_MODEL = "google/gemini-3.5-flash";
         const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+        // Retrieve current active API key (looks in localStorage first, then default fallback)
+        function getActiveApiKey() {
+            const savedKey = localStorage.getItem('personal_openrouter_key');
+            if (savedKey && savedKey.trim().startsWith("sk-or-v1-")) {
+                return savedKey.trim();
+            }
+            // Fallback default key (may get blocked if pushed publicly to GitHub)
+            return "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";
+        }
 
         function initApp() {
             setupNavigation();
@@ -547,6 +577,31 @@
             setupAuthHandlers();
             setupSpeechEngine();
             setupWalletLogic();
+            setupPersonalKeyManagement();
+        }
+
+        // Setup API Key inputs inside Profile Tab
+        function setupPersonalKeyManagement() {
+            const currentKey = localStorage.getItem('personal_openrouter_key');
+            if (currentKey) {
+                DOM.inputPersonalKey.value = currentKey;
+            }
+
+            DOM.btnSaveKey.addEventListener('click', () => {
+                const keyVal = DOM.inputPersonalKey.value.trim();
+                if (!keyVal.startsWith("sk-or-v1-")) {
+                    alert("Please enter a valid OpenRouter API key starting with 'sk-or-v1-'");
+                    return;
+                }
+                localStorage.setItem('personal_openrouter_key', keyVal);
+                alert("Your personal API Key has been saved successfully in your local browser storage.");
+            });
+
+            DOM.btnResetKey.addEventListener('click', () => {
+                localStorage.removeItem('personal_openrouter_key');
+                DOM.inputPersonalKey.value = "";
+                alert("Personal key cleared. System will now attempt to use default fallback key.");
+            });
         }
 
         // ==========================================
@@ -891,6 +946,7 @@
 
         async function callGeminiAPI(base64Image) {
             const targetLang = DOM.langSelector.value;
+            const activeKey = getActiveApiKey();
             
             // Highly optimized instruction prompt forcing dynamically selected language with zero brand/software traces
             let systemPrompt = `You are a professional cooking assistant and food expert. Analyze the food ingredients in this image.
@@ -928,9 +984,10 @@ Optional Add-ons: [Alternative cooking methods: grill, bake, fry OR a healthier 
                 const response = await fetch(OPENROUTER_URL, {
                     method: "POST",
                     headers: {
-                        "Authorization": `Bearer ${API_KEY}`,
+                        "Authorization": `Bearer ${activeKey}`,
                         "Content-Type": "application/json",
-                        "HTTP-Referer": "http://localhost"
+                        "HTTP-Referer": window.location.origin !== "null" ? window.location.origin : "https://tournament-af6dd.firebaseapp.com",
+                        "X-Title": "FoodVision AI"
                     },
                     body: JSON.stringify({
                         "model": API_MODEL,
