@@ -134,8 +134,6 @@
             
             <!-- HOME VIEW -->
             <section id="view-home" class="space-y-4">
-                
-                <!-- Target Language Selector -->
                 <div class="flex justify-between items-center bg-slate-800/40 p-2.5 rounded-xl border border-slate-800">
                     <span class="text-xs font-semibold text-slate-300">Target Language:</span>
                     <select id="lang-selector" class="bg-slate-950 border border-slate-800 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-purple max-w-[180px]">
@@ -157,7 +155,7 @@
                     </select>
                 </div>
 
-                <!-- NEW AI Engine Selector Dropdown -->
+                <!-- AI Engine Selector Dropdown -->
                 <div class="flex justify-between items-center bg-slate-800/40 p-2.5 rounded-xl border border-slate-800">
                     <span class="text-xs font-semibold text-slate-300">AI Engine:</span>
                     <select id="model-selector" class="bg-slate-950 border border-slate-800 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-purple max-w-[180px]">
@@ -235,19 +233,19 @@
                     </div>
 
                     <div class="space-y-1">
-                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Short Intro</span>
-                        <p id="result-intro" class="text-xs text-slate-300 italic">--</p>
+                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">One Line Short Note</span>
+                        <p id="result-short-note" class="text-xs text-yellow-400 italic font-semibold">--</p>
                     </div>
 
                     <div class="space-y-1">
-                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Ingredients list</span>
+                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Kya Kya Istemal Ho Ga (Ingredients List)</span>
                         <ul id="result-ingredients" class="text-xs text-slate-200 list-none space-y-0.5">
                             <!-- Bullet items here -->
                         </ul>
                     </div>
 
                     <div class="space-y-1">
-                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Step-by-step Recipe</span>
+                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Step-by-step Recipe (Mukammal Details)</span>
                         <div id="result-recipe" class="text-xs text-slate-300 leading-relaxed space-y-2">
                             <!-- Numbered items here -->
                         </div>
@@ -440,7 +438,7 @@
                 </button>
             </section>
 
-            <!-- SECURE DYNAMIC ADMIN PANEL (Upgraded for Multi-Keys management) -->
+            <!-- SECURE DYNAMIC ADMIN PANEL -->
             <section id="view-admin" class="hidden space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <h3 class="font-extrabold text-sm text-yellow-500 tracking-wider uppercase flex items-center gap-1.5">
@@ -479,7 +477,7 @@
                         </div>
 
                         <button id="btn-save-admin-keys" class="w-full bg-brand-purple hover:bg-brand-purple/95 text-white text-xs font-bold py-2.5 rounded-xl">
-                            Save All Keys to Firebase RTDB
+                            Save All Keys to Database
                         </button>
                     </div>
                 </div>
@@ -563,7 +561,7 @@
             bodyTheme: document.getElementById('body-theme'),
             appContainer: document.getElementById('app-container'),
             langSelector: document.getElementById('lang-selector'),
-            modelSelector: document.getElementById('model-selector'), // Model Selector element added
+            modelSelector: document.getElementById('model-selector'),
             
             authEmail: document.getElementById('auth-email'),
             authPassword: document.getElementById('auth-password'),
@@ -614,6 +612,7 @@
             resultServing: document.getElementById('result-serving'),
             resultTips: document.getElementById('result-tips'),
             resultAddons: document.getElementById('result-addons'),
+            resultShortNote: document.getElementById('result-short-note'), // Mapped short_note field
 
             historyList: document.getElementById('history-list'),
             btnClearHistory: document.getElementById('btn-clear-history'),
@@ -634,7 +633,6 @@
             btnTriggerAdmin: document.getElementById('btn-trigger-admin'),
             btnCloseAdmin: document.getElementById('btn-close-admin'),
             
-            // Dynamic Multiple Admin Key inputs mapped
             adminKeyGemini: document.getElementById('admin-key-gemini'),
             adminKeyGptLatest: document.getElementById('admin-key-gpt-latest'),
             adminKeyDeepseek: document.getElementById('admin-key-deepseek'),
@@ -648,7 +646,7 @@
         let compressedImageBase64 = null;
         let activeSelectedTopup = null;
 
-        // Secure Real-Time Config Object from Database (Stores separate keys)
+        // Secure Real-Time Config Object from Database
         let secureKeysConfig = {
             "google/gemini-3.1-pro-preview": "",
             "openai/gpt-chat-latest": "",
@@ -1065,7 +1063,8 @@
             DOM.previewContainer.classList.remove('hidden');
 
             try {
-                const compressedResult = await compressImage(file, 1024, 0.7);
+                // High compression resolution for extreme low-token economy (Under 100 max token cost)
+                const compressedResult = await compressImage(file, 200, 0.5);
                 compressedImageBase64 = compressedResult.dataUrl;
                 DOM.imagePreview.src = compressedImageBase64;
 
@@ -1175,15 +1174,15 @@
                 throw new Error("Missing API Key configuration in database for selected model.");
             }
             
+            // Prompt updated strictly to match "jo sabzi picture mein hai sirf wahi use ho", and provide short note + ingredients list
             let systemPrompt = `You are a professional cooking assistant and food expert. Analyze the food ingredients in this image.
             
 Important Rules:
 - NEVER mention "Gemini", "Google", "OpenRouter", "AI", "model", "software", or any technical brand names. You are simply "FoodVision AI".
-- Image ko carefully analyze karein aur sirf EK behtereen, practical aur realistic makhsoos subzi (dish) select karein jo di gayi tasveer ke mutabiq sabse behtar ban sakti ho (multiple options de kar user ko confuse mat karein, focus on exactly ONE makhsoos vegetable dish).
-- "Kese banti hai" iski bilkul mukammal, detailed, aur aasan tareeqa shamil karein (Step-by-step details bohot rich aur informative honi chahiyein taake banana bilkul aasan ho).
-- Keep the language strictly in friendly, easy-to-understand: ${targetLang}.
+- Jo sabzi picture mein nazar aa rahi hai, strictly sirf wahi sabzi ka istemal karein (basic essentials like salt, water, oil are allowed). Extra unrelated items mat likhein.
+- Target language is: ${targetLang}.
 - If ${targetLang} is "Roman Urdu", write Urdu using simple English alphabets.
-- For all other languages, write in their native script (e.g. standard Urdu in Nastaliq/Arabic script, Hindi in Devanagari script, Bengali in Bengali script, Arabic in Arabic script, etc.).
+- For all other languages, write in their native script (e.g. standard Urdu in Nastaliq, Hindi in Devanagari, Arabic, etc.).
 - You must return the output STRICTLY as a raw JSON object. Do not wrap it in markdown block like \`\`\`json. Return ONLY the raw JSON object.
 
 Expected JSON Structure (written entirely in the chosen language: ${targetLang}):
@@ -1192,10 +1191,10 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
   "prepTime": "[e.g. 10 mins]",
   "cookTime": "[e.g. 15 mins]",
   "difficulty": "[Easy/Medium/Hard]",
-  "intro": "[1-2 sentences explaining what the dish is and why it's great]",
+  "short_note": "[Ek line mein short note ke kese banana hai]",
   "ingredients": [
-    "[Ingredient 1 with quantity]",
-    "[Ingredient 2 with quantity]"
+    "[Ingredient 1 with quantity (kya kya istemal ho ga)]",
+    "[Ingredient 2 with quantity (kya kya istemal ho ga)]"
   ],
   "recipe": [
     "[Detailed step 1 on how to prep]",
@@ -1205,8 +1204,7 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
   "servingSuggestion": "[How to serve nicely]",
   "tips": [
     "[Useful tip 1]",
-    "[Useful tip 2]",
-    "[Useful tip 3]"
+    "[Useful tip 2]"
   ],
   "addons": "[Alternative cooking method or healthy version]"
 }`;
@@ -1238,8 +1236,8 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
                             ]
                         }
                     ],
-                    "max_tokens": 800, // Safe balanced token ceiling
-                    "max_completion_tokens": 800
+                    "max_tokens": 600, // Budget output limit locked exactly at 600 tokens as requested
+                    "max_completion_tokens": 600
                 })
             });
 
@@ -1273,6 +1271,7 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
             let cook = "20 Mins";
             let diff = "Easy";
             let intro = "Yeh ek behtareen aur asan dish hai jo ap ghar par jaldi bana sakte hain.";
+            let short_note = "Aloo ki simple aur swadishth recipe.";
             let ingredientsHTML = "";
             let recipeHTML = "";
             let serving = "--";
@@ -1288,6 +1287,7 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
                 cook = data.cookTime || cook;
                 diff = data.difficulty || diff;
                 intro = data.intro || intro;
+                short_note = data.short_note || short_note;
                 serving = data.servingSuggestion || serving;
                 addons = data.addons || addons;
 
@@ -1313,6 +1313,7 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
             DOM.resultCook.textContent = cook;
             DOM.resultDifficulty.textContent = diff;
             DOM.resultIntro.textContent = intro;
+            DOM.resultShortNote.textContent = short_note; // Render dynamic short note
             DOM.resultIngredients.innerHTML = ingredientsHTML || "<li>Visible items in the picture</li>";
             DOM.resultRecipe.innerHTML = recipeHTML || `<p class="whitespace-pre-line">${rawText}</p>`;
             DOM.resultServing.textContent = serving;
@@ -1348,7 +1349,7 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
               "prepTime": "5 Mins",
               "cookTime": "15 Mins",
               "difficulty": "Easy",
-              "intro": "Yeh ek nihaayat hi aasan aur crispy aloo recipe hai jo kam ingredients ke sath jaldi tayar ho jati hai.",
+              "short_note": "Aloo ko barik kaat kar masalon ke sath fry karne ka aasan tareeqa.",
               "ingredients": [
                 "Aloo (Potatoes) - 2-3 sliced",
                 "Tamatar (Tomato) - 1 chopped",
@@ -1404,6 +1405,7 @@ Expected JSON Structure (written entirely in the chosen language: ${targetLang})
                 });
             });
 
+            // Submit dynamic verification request directly to Firebase Realtime Database
             DOM.btnTxSubmit.addEventListener('click', async () => {
                 const txId = DOM.txInput.value.trim();
                 if (txId.length < 8) {
