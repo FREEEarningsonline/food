@@ -191,7 +191,7 @@
                     </button>
                 </div>
 
-                <!-- AI Output Results -->
+                <!-- AI Output Results (Beautified Structured Output Cards) -->
                 <div id="ai-result-card" class="hidden p-4 rounded-2xl glass-card border border-purple-500/20 space-y-3">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                         <span class="text-[10px] font-bold text-purple-400 tracking-wider uppercase">FoodVision AI Output</span>
@@ -201,7 +201,7 @@
                     </div>
 
                     <div class="space-y-1">
-                        <h4 class="text-[11px] font-bold text-slate-400">Recipe Title:</h4>
+                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Recipe Title</span>
                         <p id="result-dish" class="text-sm text-yellow-400 font-bold">--</p>
                     </div>
 
@@ -221,18 +221,39 @@
                     </div>
 
                     <div class="space-y-1">
-                        <h4 class="text-[11px] font-bold text-slate-400">Short Intro:</h4>
+                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Short Intro</span>
                         <p id="result-intro" class="text-xs text-slate-300 italic">--</p>
                     </div>
 
                     <div class="space-y-1">
-                        <h4 class="text-[11px] font-bold text-slate-400">Ingredients list:</h4>
-                        <p id="result-ingredients" class="text-xs text-slate-200">--</p>
+                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Ingredients list</span>
+                        <ul id="result-ingredients" class="text-xs text-slate-200 list-none space-y-0.5">
+                            <!-- Bullet items here -->
+                        </ul>
                     </div>
 
                     <div class="space-y-1">
-                        <h4 class="text-[11px] font-bold text-slate-400">Step-by-step Recipe:</h4>
-                        <p id="result-recipe" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">--</p>
+                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Step-by-step Recipe</span>
+                        <div id="result-recipe" class="text-xs text-slate-300 leading-relaxed space-y-2">
+                            <!-- Numbered items here -->
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Serving Suggestion</span>
+                        <p id="result-serving" class="text-xs text-slate-300">--</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Useful Tips</span>
+                        <ul id="result-tips" class="text-xs text-slate-300 list-none space-y-0.5">
+                            <!-- Tips list here -->
+                        </ul>
+                    </div>
+
+                    <div class="space-y-1">
+                        <span class="text-[8px] uppercase tracking-wider text-slate-500 font-bold">Optional Add-ons</span>
+                        <p id="result-addons" class="text-xs text-slate-300">--</p>
                     </div>
                 </div>
             </section>
@@ -554,6 +575,9 @@
             resultCook: document.getElementById('result-cook'),
             resultDifficulty: document.getElementById('result-difficulty'),
             resultIntro: document.getElementById('result-intro'),
+            resultServing: document.getElementById('result-serving'),
+            resultTips: document.getElementById('result-tips'),
+            resultAddons: document.getElementById('result-addons'),
 
             historyList: document.getElementById('history-list'),
             btnClearHistory: document.getElementById('btn-clear-history'),
@@ -1113,27 +1137,32 @@ Important Rules:
 - Keep the language strictly in friendly, easy-to-understand: ${targetLang}.
 - If ${targetLang} is "Roman Urdu", write Urdu using simple English alphabets.
 - For all other languages, write in their native script (e.g. standard Urdu in Nastaliq/Arabic script, Hindi in Devanagari script, Bengali in Bengali script, Arabic in Arabic script, etc.).
+- You must return the output STRICTLY as a raw JSON object. Do not wrap it in markdown block like \`\`\`json. Return ONLY the raw JSON object.
 
-Strictly follow this output structure (written entirely in the chosen language: ${targetLang}):
-
-Title: [Dish name - short and clear]
-
-Prep Time: [Preparation time, e.g., 10 mins]
-Cook Time: [Cooking time, e.g., 20 mins]
-Difficulty Level: [Easy / Medium / Hard]
-
-Short Intro: [1-2 lines explaining what the dish is and why it's great]
-
-Ingredients: [Detailed list of necessary items with quantities, bullet points]
-
-Step-by-step Recipe: [Bilkul detailed aur aasan tareeqa-e-kaar (how to make step-by-step in complete detail) using numbers 1, 2, 3...]
-[Mention flame level: low, medium, or high, and exact cooking times]
-
-Serving Suggestion: [How to serve the dish nicely]
-
-Tips: [Provide at least 3 very useful kitchen/cooking tips, such as not overcooking, taste enhancement, or hygiene]
-
-Optional Add-ons: [Alternative cooking methods: grill, bake, fry OR a healthier modification]`;
+Expected JSON Structure (written entirely in the chosen language: ${targetLang}):
+{
+  "title": "[Dish name - short and clear]",
+  "prepTime": "[e.g. 10 mins]",
+  "cookTime": "[e.g. 15 mins]",
+  "difficulty": "[Easy/Medium/Hard]",
+  "intro": "[1-2 sentences explaining what the dish is and why it's great]",
+  "ingredients": [
+    "[Ingredient 1 with quantity]",
+    "[Ingredient 2 with quantity]"
+  ],
+  "recipe": [
+    "[Detailed step 1 on how to prep]",
+    "[Detailed step 2 on how to cook, mention heat level and time]",
+    "[Detailed step 3 on finishing]"
+  ],
+  "servingSuggestion": "[How to serve nicely]",
+  "tips": [
+    "[Useful tip 1]",
+    "[Useful tip 2]",
+    "[Useful tip 3]"
+  ],
+  "addons": "[Alternative cooking method or healthy version]"
+}`;
 
             const response = await fetch(OPENROUTER_URL, {
                 method: "POST",
@@ -1162,7 +1191,7 @@ Optional Add-ons: [Alternative cooking methods: grill, bake, fry OR a healthier 
                             ]
                         }
                     ],
-                    "max_tokens": 800, // Safe balanced limit to deliver deep details while remaining well under the 1,217 context budget
+                    "max_tokens": 800, // Balanced limit to provide rich steps within the strict context ceiling
                     "max_completion_tokens": 800
                 })
             });
@@ -1177,35 +1206,61 @@ Optional Add-ons: [Alternative cooking methods: grill, bake, fry OR a healthier 
             return json.choices[0].message.content;
         }
 
+        // Helper function to clean markdown wrapping of JSON
+        function cleanJsonString(str) {
+            let cleaned = str.trim();
+            if (cleaned.startsWith("```json")) {
+                cleaned = cleaned.substring(7);
+            } else if (cleaned.startsWith("```")) {
+                cleaned = cleaned.substring(3);
+            }
+            if (cleaned.endsWith("```")) {
+                cleaned = cleaned.substring(0, cleaned.length - 3);
+            }
+            return cleaned.trim();
+        }
+
         function parseAndDisplayAIResult(rawText) {
             let title = "Tasty Suggested Dish";
             let prep = "10 Mins";
             let cook = "20 Mins";
             let diff = "Easy";
             let intro = "Yeh ek behtareen aur asan dish hai jo ap ghar par jaldi bana sakte hain.";
-            let ingredients = "Visible items in the picture";
-            let recipe = rawText;
+            let ingredientsHTML = "";
+            let recipeHTML = "";
+            let serving = "--";
+            let tipsHTML = "";
+            let addons = "--";
 
             try {
-                const lines = rawText.split('\n');
-                lines.forEach(line => {
-                    const cleanLine = line.trim();
-                    if (cleanLine.toLowerCase().startsWith('title:')) {
-                        title = cleanLine.substring(6).trim();
-                    } else if (cleanLine.toLowerCase().startsWith('prep time:')) {
-                        prep = cleanLine.substring(10).trim();
-                    } else if (cleanLine.toLowerCase().startsWith('cook time:')) {
-                        cook = cleanLine.substring(10).trim();
-                    } else if (cleanLine.toLowerCase().startsWith('difficulty level:')) {
-                        diff = cleanLine.substring(17).trim();
-                    } else if (cleanLine.toLowerCase().startsWith('short intro:')) {
-                        intro = cleanLine.substring(12).trim();
-                    } else if (cleanLine.toLowerCase().startsWith('ingredients:')) {
-                        ingredients = cleanLine.substring(12).trim();
-                    }
-                });
+                // Strip markdown wraps if present and parse
+                const cleanedText = cleanJsonString(rawText);
+                const data = JSON.parse(cleanedText);
+
+                title = data.title || title;
+                prep = data.prepTime || prep;
+                cook = data.cookTime || cook;
+                diff = data.difficulty || diff;
+                intro = data.intro || intro;
+                serving = data.servingSuggestion || serving;
+                addons = data.addons || addons;
+
+                if (Array.isArray(data.ingredients)) {
+                    ingredientsHTML = data.ingredients.map(ing => `<li class="flex items-center gap-1.5 py-0.5"><span class="text-[8px] text-purple-400">●</span> ${ing}</li>`).join('');
+                }
+                if (Array.isArray(data.recipe)) {
+                    recipeHTML = data.recipe.map((step, index) => `<div class="mb-2"><span class="font-bold text-yellow-400">${index + 1}.</span> ${step}</div>`).join('');
+                }
+                if (Array.isArray(data.tips)) {
+                    tipsHTML = data.tips.map(tip => `<li class="flex items-start gap-1.5 py-0.5"><span class="text-[8px] text-purple-400 mt-1.5">●</span> <span>${tip}</span></li>`).join('');
+                }
+
             } catch (e) {
-                console.error("Parsing failed, displaying raw response instead");
+                console.error("JSON parsing failed, fallback to raw text legacy parsing:", e);
+                // Fallback line-by-line parsing if AI outputs plain text instead of JSON
+                recipeHTML = `<p class="whitespace-pre-line">${rawText}</p>`;
+                ingredientsHTML = "<li>Visible items in the picture</li>";
+                tipsHTML = "<li>Follow standard recipe safety and instructions.</li>";
             }
 
             DOM.resultDish.textContent = title;
@@ -1213,14 +1268,18 @@ Optional Add-ons: [Alternative cooking methods: grill, bake, fry OR a healthier 
             DOM.resultCook.textContent = cook;
             DOM.resultDifficulty.textContent = diff;
             DOM.resultIntro.textContent = intro;
-            DOM.resultIngredients.textContent = ingredients;
-            DOM.resultRecipe.textContent = recipe;
+            DOM.resultIngredients.innerHTML = ingredientsHTML || "<li>Visible items in the picture</li>";
+            DOM.resultRecipe.innerHTML = recipeHTML || `<p class="whitespace-pre-line">${rawText}</p>`;
+            DOM.resultServing.textContent = serving;
+            DOM.resultTips.innerHTML = tipsHTML || "<li>Follow standard recipe guidelines.</li>";
+            DOM.resultAddons.textContent = addons;
+
             DOM.aiResultCard.classList.remove('hidden');
 
             const newScan = {
                 dish: title,
-                detected: ingredients,
-                recipe: recipe,
+                detected: ingredientsHTML ? "JSON ingredients parsed" : "Visible items",
+                recipe: rawText,
                 prep: prep,
                 cook: cook,
                 diff: diff,
@@ -1240,38 +1299,32 @@ Optional Add-ons: [Alternative cooking methods: grill, bake, fry OR a healthier 
         }
 
         function simulateAIService() {
-            return `Title: Masala Potato Fry (Aloo Fry)
-
-Prep Time: 5 Mins
-Cook Time: 15 Mins
-Difficulty Level: Easy
-
-Short Intro: 
-Yeh ek nihaayat hi aasan aur crispy aloo recipe hai jo kam ingredients ke sath jaldi tayar ho jati hai.
-
-Ingredients:
-- Aloo (Potatoes) - 2-3 slice kiye hue
-- Tamatar (Tomatoes) - 1 adad barik kata hua
-- Namak (Salt) - Hasb-e-zaiqa
-- Oil - 2 chammach
-- Pani - 1/2 cup
-
-Step-by-step Recipe:
-1. Sab se pehle pan mein 2 chammach oil garam karein medium heat par.
-2. Ab isme kate hue aloo shamil karein aur unhe 5 minutes ke liye fry karein jab tak thode soft na ho jayein.
-3. Tamatar aur thoda sa namak dal kar halki flame (low heat) par 10 minutes ke liye dhak kar pakayein.
-4. Jab aloo mukammal tor par gal jayein to flame band kar dein.
-
-Serving Suggestion:
-Isko garam-garam roti ya chapati ke sath serve karein.
-
-Tips:
-- Aloo ko barik slice karein taake woh jaldi gal jayein.
-- Cooking ke dauran flame ko low rakhein taake aloo jalein nahi.
-- Aap isme thoda sa dhaniya patti dal kar iska swad mazeed barha sakte hain.
-
-Optional Add-ons:
-Iska healthy version banane ke liye kam se kam oil ka istemal karein.`;
+            return `{
+              "title": "Masala Potato Fry (Aloo Fry)",
+              "prepTime": "5 Mins",
+              "cookTime": "15 Mins",
+              "difficulty": "Easy",
+              "intro": "Yeh ek nihaayat hi aasan aur crispy aloo recipe hai jo kam ingredients ke sath jaldi tayar ho jati hai.",
+              "ingredients": [
+                "Aloo (Potatoes) - 2-3 sliced",
+                "Tamatar (Tomato) - 1 chopped",
+                "Oil - 2 chammach",
+                "Namak (Salt) - Hasb-e-zaiqa",
+                "Pani (Water) - 1/2 cup"
+              ],
+              "recipe": [
+                "Pan mein 2 chammach oil shamil karein aur use medium flame par garam hone dein.",
+                "Kate hue aloo pan mein shamil karein aur unhe 5 minutes ke liye fry karein jab tak halka golden colour aa jaye.",
+                "Ab barik kate hue tamatar aur namak shamil karein, mix karein aur low heat par 10 minutes ke liye dhak kar pakayein taake aloo gal jayein."
+              ],
+              "servingSuggestion": "Isko garam roti ya chapati ke sath pesh karein.",
+              "tips": [
+                "Aloo ko thin slice karein taake woh jaldi gal jayein.",
+                "Garam oil mein aloo dho kar furan mat dalein, dry kar ke dalein taake chhinte na udein.",
+                "Serve karte waqt upar hara dhaniya shamil karein."
+              ],
+              "addons": "Iska healthy version banane ke liye oil ki jagah olive oil ya airfryer ka istemal kiya ja sakta hai."
+            }`;
         }
 
         // ==========================================
@@ -1451,14 +1504,9 @@ Iska healthy version banane ke liye kam se kam oil ka istemal karein.`;
 
                     DOM.imagePreview.src = scan.image;
                     DOM.previewContainer.classList.remove('hidden');
-                    DOM.resultIngredients.textContent = scan.detected || "Visible items";
-                    DOM.resultDish.textContent = scan.dish;
-                    DOM.resultPrep.textContent = scan.prep || "--";
-                    DOM.resultCook.textContent = scan.cook || "--";
-                    DOM.resultDifficulty.textContent = scan.diff || "--";
-                    DOM.resultIntro.textContent = scan.intro || "--";
-                    DOM.resultRecipe.textContent = scan.recipe;
-                    DOM.aiResultCard.classList.remove('hidden');
+                    
+                    // Trigger JSON Parsing on click reload
+                    parseAndDisplayAIResult(scan.recipe);
 
                     DOM.navTabs[0].click();
                 });
@@ -1487,7 +1535,8 @@ Iska healthy version banane ke liye kam se kam oil ka istemal karein.`;
                         DOM.btnSpeak.textContent = "volume_up";
                         return;
                     }
-                    const utter = new SpeechSynthesisUtterance(DOM.resultRecipe.textContent);
+                    const speakText = `Recipe Name: ${DOM.resultDish.textContent}. Prepare Time: ${DOM.resultPrep.textContent}. Cooking: ${DOM.resultRecipe.textContent}`;
+                    const utter = new SpeechSynthesisUtterance(speakText);
                     DOM.btnSpeak.textContent = "volume_off";
                     utter.onend = () => { DOM.btnSpeak.textContent = "volume_up"; };
                     window.speechSynthesis.speak(utter);
