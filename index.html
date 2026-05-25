@@ -378,25 +378,14 @@
                     <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
                         <span id="profile-avatar" class="material-icons-round text-slate-300">person</span>
                     </div>
-                    <div>
+                    <div class="flex-grow">
                         <h4 id="profile-name" class="font-bold text-xs">Guest Mode</h4>
                         <p id="profile-email" class="text-[10px] text-slate-500">demo-user@foodvision.ai</p>
                     </div>
-                </div>
-
-                <!-- API KEY CONFIGURATION MODULE (Anti-Block Feature for GitHub Pages) -->
-                <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                    <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider">Secure API Key Setup</h4>
-                    <p class="text-[10px] text-slate-400 leading-relaxed">
-                        GitHub par push karne se default key block ho jati hai. Apni personal active OpenRouter Key yahan safe save karein:
-                    </p>
-                    <div class="space-y-2">
-                        <input type="password" id="input-personal-key" placeholder="Enter OpenRouter API Key (sk-or-v1-...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl text-xs px-3 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-purple">
-                        <div class="flex gap-2">
-                            <button id="btn-save-key" class="bg-brand-purple hover:bg-brand-purple/90 text-white font-bold text-[10px] px-3 py-2 rounded-xl flex-1">Save Key</button>
-                            <button id="btn-reset-key" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] px-3 py-2 rounded-xl">Clear</button>
-                        </div>
-                    </div>
+                    <!-- Hidden Admin trigger (Will only show for kazimmustafa38@gmail.com) -->
+                    <button id="btn-trigger-admin" class="hidden p-1 hover:bg-white/5 rounded text-slate-600 hover:text-slate-400">
+                        <span class="material-icons-round text-xs">admin_panel_settings</span>
+                    </button>
                 </div>
 
                 <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
@@ -414,6 +403,40 @@
                     <span class="material-icons-round text-sm">logout</span>
                     Sign Out Account
                 </button>
+            </section>
+
+            <!-- SECURE DYNAMIC ADMIN PANEL -->
+            <section id="view-admin" class="hidden space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <h3 class="font-extrabold text-sm text-yellow-500 tracking-wider uppercase flex items-center gap-1.5">
+                        <span class="material-icons-round text-sm">shield</span> Admin Workspace
+                    </h3>
+                    <button id="btn-close-admin" class="text-xs text-slate-500 hover:text-slate-300">Exit Admin</button>
+                </div>
+
+                <!-- API Key Manager (No Hardcoding) -->
+                <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-300 flex items-center gap-1">
+                        <span class="material-icons-round text-xs text-purple-400">vpn_key</span> OpenRouter API Key
+                    </h4>
+                    <p class="text-[10px] text-slate-400">Is key ko aap database mein save karenge taake GitHub isay leak/block na kar sake:</p>
+                    <div class="space-y-2">
+                        <input type="password" id="admin-input-key" placeholder="Enter OpenRouter API Key (sk-or-v1-...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl text-xs px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-brand-purple">
+                        <button id="btn-save-admin-key" class="w-full bg-brand-purple hover:bg-brand-purple/95 text-white text-xs font-bold py-2 rounded-xl">
+                            Save Key to Firebase RTDB
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Deposit Verification System (Nazim Mustafa Sahib's Queue) -->
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-slate-300 flex items-center gap-1">
+                        <span class="material-icons-round text-xs text-emerald-400">payments</span> Pending Deposits Verification
+                    </h4>
+                    <div id="admin-pending-list" class="space-y-2.5 max-h-80 overflow-y-auto">
+                        <!-- Pending verification requests load dynamically -->
+                    </div>
+                </div>
             </section>
 
         </main>
@@ -496,7 +519,8 @@
                 'view-home': document.getElementById('view-home'),
                 'view-history': document.getElementById('view-history'),
                 'view-wallet': document.getElementById('view-wallet'),
-                'view-profile': document.getElementById('view-profile')
+                'view-profile': document.getElementById('view-profile'),
+                'view-admin': document.getElementById('view-admin')
             },
 
             headerCredits: document.getElementById('header-credits-count'),
@@ -546,29 +570,24 @@
             taskInvite: document.getElementById('task-invite'),
             taskVideo: document.getElementById('task-video'),
 
-            // Personal API Key Management UI
-            inputPersonalKey: document.getElementById('input-personal-key'),
-            btnSaveKey: document.getElementById('btn-save-key'),
-            btnResetKey: document.getElementById('btn-reset-key')
+            // Admin Panel Controls
+            btnTriggerAdmin: document.getElementById('btn-trigger-admin'),
+            btnCloseAdmin: document.getElementById('btn-close-admin'),
+            adminInputKey: document.getElementById('admin-input-key'),
+            btnSaveAdminKey: document.getElementById('btn-save-admin-key'),
+            adminPendingList: document.getElementById('admin-pending-list')
         };
 
         let isAuthSignUpMode = false;
         let compressedImageBase64 = null;
         let activeSelectedTopup = null;
 
-        // Default API Configuration
-        const API_MODEL = "google/gemini-3.5-flash";
-        const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+        // Secure Real-Time Config from Firebase Realtime Database
+        let secureDatabaseApiKey = "";
 
-        // Retrieve current active API key (looks in localStorage first, then default fallback)
-        function getActiveApiKey() {
-            const savedKey = localStorage.getItem('personal_openrouter_key');
-            if (savedKey && savedKey.trim().startsWith("sk-or-v1-")) {
-                return savedKey.trim();
-            }
-            // Fallback default key (may get blocked if pushed publicly to GitHub)
-            return "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";
-        }
+        // API Configurations (Gemini 3.1 Pro Preview as requested)
+        const API_MODEL = "google/gemini-3.1-pro-preview";
+        const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
         function initApp() {
             setupNavigation();
@@ -577,30 +596,148 @@
             setupAuthHandlers();
             setupSpeechEngine();
             setupWalletLogic();
-            setupPersonalKeyManagement();
+            setupAdminFunctionality();
+            loadGlobalConfig();
         }
 
-        // Setup API Key inputs inside Profile Tab
-        function setupPersonalKeyManagement() {
-            const currentKey = localStorage.getItem('personal_openrouter_key');
-            if (currentKey) {
-                DOM.inputPersonalKey.value = currentKey;
-            }
-
-            DOM.btnSaveKey.addEventListener('click', () => {
-                const keyVal = DOM.inputPersonalKey.value.trim();
-                if (!keyVal.startsWith("sk-or-v1-")) {
-                    alert("Please enter a valid OpenRouter API key starting with 'sk-or-v1-'");
-                    return;
+        // Real-Time Listener to pull Secure API Key from Database
+        function loadGlobalConfig() {
+            onValue(ref(db, 'config/openrouter_api_key'), (snapshot) => {
+                secureDatabaseApiKey = snapshot.val() || "";
+                if (secureDatabaseApiKey) {
+                    DOM.adminInputKey.value = secureDatabaseApiKey;
                 }
-                localStorage.setItem('personal_openrouter_key', keyVal);
-                alert("Your personal API Key has been saved successfully in your local browser storage.");
+            });
+        }
+
+        // ==========================================
+        // Admin Panel Secure Workflows (Only for kazimmustafa38@gmail.com)
+        // ==========================================
+        function setupAdminFunctionality() {
+            DOM.btnTriggerAdmin.addEventListener('click', () => {
+                // Double check if the logged in user is actually the admin
+                if (appState.currentUser && appState.currentUser.email === "kazimmustafa38@gmail.com") {
+                    // Hide other views & display admin section
+                    Object.keys(DOM.views).forEach(vId => {
+                        DOM.views[vId].classList.add('hidden');
+                    });
+                    DOM.views['view-admin'].classList.remove('hidden');
+                } else {
+                    alert("Unauthorized access attempt. Only the verified Admin can enter.");
+                }
             });
 
-            DOM.btnResetKey.addEventListener('click', () => {
-                localStorage.removeItem('personal_openrouter_key');
-                DOM.inputPersonalKey.value = "";
-                alert("Personal key cleared. System will now attempt to use default fallback key.");
+            DOM.btnCloseAdmin.addEventListener('click', () => {
+                DOM.views['view-admin'].classList.add('hidden');
+                DOM.views['view-profile'].classList.remove('hidden');
+            });
+
+            // Save Key securely to Database config node
+            DOM.btnSaveAdminKey.addEventListener('click', async () => {
+                const keyVal = DOM.adminInputKey.value.trim();
+                if (!keyVal.startsWith("sk-or-v1-")) {
+                    alert("Please enter a valid OpenRouter API Key starting with 'sk-or-v1-'");
+                    return;
+                }
+                
+                try {
+                    await set(ref(db, 'config/openrouter_api_key'), keyVal);
+                    alert("API Key saved successfully inside Firebase Realtime Database!");
+                } catch (e) {
+                    alert("Error saving API Key to Database: " + e.message);
+                }
+            });
+
+            // Live Real-Time Deposit Verification queue for Admin Nazim Mustafa sahib
+            onValue(ref(db, 'global_deposits'), (snapshot) => {
+                const deposits = [];
+                snapshot.forEach(child => {
+                    const data = child.val();
+                    data.key = child.key;
+                    if (data.status === "Pending") {
+                        deposits.unshift(data);
+                    }
+                });
+
+                if (deposits.length === 0) {
+                    DOM.adminPendingList.innerHTML = `
+                        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl text-center text-xs text-slate-500">
+                            No pending deposits found in database queue.
+                        </div>`;
+                    return;
+                }
+
+                DOM.adminPendingList.innerHTML = deposits.map(dep => `
+                    <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-2 text-xs">
+                        <div class="flex justify-between font-bold">
+                            <span class="text-slate-300 font-mono">TxID: ${dep.txId}</span>
+                            <span class="text-yellow-400">${dep.price} PKR</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 space-y-0.5">
+                            <p>User Email: ${dep.email}</p>
+                            <p>Credits to Add: +${dep.credits}</p>
+                            <p>Time: ${dep.timestamp}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn-approve-dep bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-3 rounded-lg flex-1" data-id="${dep.key}" data-uid="${dep.uid}" data-credits="${dep.credits}" data-plan="${dep.planName}">Approve</button>
+                            <button class="btn-reject-dep bg-rose-600 hover:bg-rose-500 text-white font-bold py-1.5 px-3 rounded-lg flex-1" data-id="${dep.key}">Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Approve & Reject action handlers
+                DOM.adminPendingList.querySelectorAll('.btn-approve-dep').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const depId = btn.dataset.id;
+                        const userUid = btn.dataset.uid;
+                        const creditsToAdd = parseInt(btn.dataset.credits);
+                        const planName = btn.dataset.plan;
+
+                        try {
+                            // 1. Fetch current credits of targeted user
+                            const userSnap = await get(ref(db, 'users/' + userUid));
+                            if (userSnap.exists()) {
+                                const currentCredits = userSnap.val().credits || 0;
+                                const newCredits = currentCredits + creditsToAdd;
+
+                                // 2. Update user parameters
+                                await update(ref(db, 'users/' + userUid), {
+                                    credits: newCredits,
+                                    activePlan: planName
+                                });
+
+                                // 3. Push log to user transactions node
+                                await push(ref(db, 'users/' + userUid + '/transactions'), {
+                                    title: `Deposit Package Approved (${planName})`,
+                                    date: new Date().toLocaleString(),
+                                    val: `+${creditsToAdd}`,
+                                    type: 'plus'
+                                });
+                            }
+
+                            // 4. Update global deposit status to Approved
+                            await update(ref(db, 'global_deposits/' + depId), {
+                                status: "Approved"
+                            });
+
+                            alert("Deposit verified and credited successfully!");
+                        } catch (e) {
+                            alert("Verification error: " + e.message);
+                        }
+                    });
+                });
+
+                DOM.adminPendingList.querySelectorAll('.btn-reject-dep').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const depId = btn.dataset.id;
+                        if (confirm("Are you sure you want to reject this deposit request?")) {
+                            await update(ref(db, 'global_deposits/' + depId), {
+                                status: "Rejected"
+                            });
+                            alert("Deposit rejected successfully.");
+                        }
+                    });
+                });
             });
         }
 
@@ -717,6 +854,13 @@
                     appState.currentUser = user;
                     appState.isGuest = false;
 
+                    // Securely show/hide Admin Button ONLY for kazimmustafa38@gmail.com
+                    if (user.email === "kazimmustafa38@gmail.com") {
+                        DOM.btnTriggerAdmin.classList.remove('hidden');
+                    } else {
+                        DOM.btnTriggerAdmin.classList.add('hidden');
+                    }
+
                     // Real-time Dynamic Synchronizations
                     onValue(ref(db, 'users/' + user.uid + '/credits'), (snapshot) => {
                         appState.credits = snapshot.val() || 0;
@@ -756,6 +900,7 @@
                 } else {
                     DOM.authOverlay.style.display = 'flex';
                     DOM.authOverlay.classList.remove('opacity-0');
+                    DOM.btnTriggerAdmin.classList.add('hidden');
                 }
             });
         }
@@ -897,7 +1042,7 @@
         }
 
         // ==========================================
-        // Live Gemini 3.5 Flash API with OpenRouter
+        // Live Gemini 3.1 Pro Preview API with OpenRouter
         // ==========================================
         DOM.btnAnalyze.addEventListener('click', async () => {
             if (appState.credits < 2) {
@@ -923,7 +1068,7 @@
                         credits: appState.credits - cost
                     });
                     await push(ref(db, 'users/' + appState.currentUser.uid + '/transactions'), {
-                        title: 'FoodVision AI Recipe Scan',
+                        title: 'FoodVision AI Recipe Scan (gemini-3.1-pro)',
                         date: new Date().toLocaleString(),
                         val: `-${cost}`,
                         type: 'minus'
@@ -937,7 +1082,12 @@
 
             } catch (err) {
                 console.error("API error:", err);
-                alert("Failed to communicate with AI endpoint: " + err.message);
+                alert("API Error: " + err.message);
+                
+                // Fallback offline simulation execution
+                alert("Running offline simulation mode...");
+                const fallbackText = simulateAIService();
+                parseAndDisplayAIResult(fallbackText);
             } finally {
                 DOM.btnAnalyze.disabled = false;
                 DOM.btnAnalyze.innerHTML = `<span class="material-icons-round text-sm">psychology</span> Analyze Ingredients (-2 Credits)`;
@@ -946,7 +1096,12 @@
 
         async function callGeminiAPI(base64Image) {
             const targetLang = DOM.langSelector.value;
-            const activeKey = getActiveApiKey();
+            const activeKey = secureDatabaseApiKey;
+            
+            if (!activeKey) {
+                alert("Alert: Database mein OpenRouter API key save nahi hai. Pehle Admin panel se API Key save karein.");
+                throw new Error("Missing API Key configuration in database.");
+            }
             
             // Highly optimized instruction prompt forcing dynamically selected language with zero brand/software traces
             let systemPrompt = `You are a professional cooking assistant and food expert. Analyze the food ingredients in this image.
@@ -980,49 +1135,44 @@ Tips: [Provide at least 3 very useful kitchen/cooking tips, such as not overcook
 
 Optional Add-ons: [Alternative cooking methods: grill, bake, fry OR a healthier modification]`;
 
-            try {
-                const response = await fetch(OPENROUTER_URL, {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${activeKey}`,
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": window.location.origin !== "null" ? window.location.origin : "https://tournament-af6dd.firebaseapp.com",
-                        "X-Title": "FoodVision AI"
-                    },
-                    body: JSON.stringify({
-                        "model": API_MODEL,
-                        "messages": [
-                            {
-                                "role": "user",
-                                "content": [
-                                    {
-                                        "type": "text",
-                                        "text": systemPrompt
-                                    },
-                                    {
-                                        "type": "image_url",
-                                        "image_url": {
-                                            "url": base64Image
-                                        }
+            const response = await fetch(OPENROUTER_URL, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${activeKey}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": window.location.origin !== "null" ? window.location.origin : "https://tournament-af6dd.firebaseapp.com",
+                    "X-Title": "FoodVision AI"
+                },
+                body: JSON.stringify({
+                    "model": API_MODEL,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": systemPrompt
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": base64Image
                                     }
-                                ]
-                            }
-                        ]
-                    })
-                });
+                                }
+                            ]
+                        }
+                    ]
+                })
+            });
 
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData?.error?.message || "Internal Network Error");
-                }
-
-                const json = await response.json();
-                return json.choices[0].message.content;
-
-            } catch (err) {
-                console.warn("Direct API failed, running simulation fallback: ", err);
-                return simulateAIService();
+            if (!response.ok) {
+                const errData = await response.json();
+                const apiError = errData?.error?.message || "HTTP Error " + response.status;
+                throw new Error(apiError);
             }
+
+            const json = await response.json();
+            return json.choices[0].message.content;
         }
 
         function parseAndDisplayAIResult(rawText) {
@@ -1155,6 +1305,7 @@ Iska healthy version banane ke liye kam se kam oil ka istemal karein.`;
                 });
             });
 
+            // Submit dynamic verification request directly to Firebase Realtime Database
             DOM.btnTxSubmit.addEventListener('click', async () => {
                 const txId = DOM.txInput.value.trim();
                 if (txId.length < 8) {
@@ -1162,34 +1313,39 @@ Iska healthy version banane ke liye kam se kam oil ka istemal karein.`;
                     return;
                 }
 
-                alert("Your Transaction verification has been initiated. Please wait...");
+                if (appState.isGuest) {
+                    alert("Guest accounts cannot purchase plans. Please login first.");
+                    return;
+                }
+
+                alert("Your Transaction ID has been submitted to Admin Nazim Mustafa for verification. Live status will update soon.");
                 DOM.txInput.value = "";
                 DOM.depositPanel.classList.add('hidden');
 
-                // Simulation: Payments successfully verify via Firebase database update triggers
-                setTimeout(async () => {
-                    if (activeSelectedTopup) {
-                        const earnedCredits = parseInt(activeSelectedTopup.credits);
-                        
-                        if (!appState.isGuest && appState.currentUser) {
-                            await update(ref(db, 'users/' + appState.currentUser.uid), {
-                                credits: appState.credits + earnedCredits,
-                                activePlan: activeSelectedTopup.planName
-                            });
-                            await push(ref(db, 'users/' + appState.currentUser.uid + '/transactions'), {
-                                title: `Deposit Package Verified (${activeSelectedTopup.planName})`,
-                                date: new Date().toLocaleString(),
-                                val: `+${earnedCredits}`,
-                                type: 'plus'
-                            });
-                        } else {
-                            appState.credits += earnedCredits;
-                            appState.activePlan = activeSelectedTopup.planName;
-                            refreshCreditsDisplay();
-                        }
-                        alert("EasyPaisa/JazzCash transaction confirmed! Added +" + earnedCredits + " credits.");
-                    }
-                }, 5500);
+                try {
+                    // Push deposit data directly into database queue
+                    await set(ref(db, 'global_deposits/' + txId), {
+                        uid: appState.currentUser.uid,
+                        email: appState.currentUser.email || "No Email",
+                        txId: txId,
+                        planName: activeSelectedTopup.planName,
+                        credits: parseInt(activeSelectedTopup.credits),
+                        price: activeSelectedTopup.price,
+                        status: "Pending",
+                        timestamp: new Date().toLocaleString()
+                    });
+                    
+                    // Create pending status in user's transactional logs
+                    await push(ref(db, 'users/' + appState.currentUser.uid + '/transactions'), {
+                        title: `Deposit Verification Pending (TxID: ${txId})`,
+                        date: new Date().toLocaleString(),
+                        val: `Pending`,
+                        type: 'minus'
+                    });
+
+                } catch (e) {
+                    alert("Error submitting request to database: " + e.message);
+                }
             });
 
             // Invite tasks
@@ -1247,9 +1403,11 @@ Iska healthy version banane ke liye kam se kam oil ka istemal karein.`;
             }
 
             DOM.txHistoryList.innerHTML = appState.transactions.map(tx => {
-                const pillColor = tx.type === 'plus' 
-                    ? 'bg-green-950/40 border-green-900/30 text-green-400' 
-                    : 'bg-red-950/40 border-red-900/30 text-red-400';
+                const isPending = tx.val === 'Pending';
+                const pillColor = isPending 
+                    ? 'bg-yellow-950/40 border-yellow-900/30 text-yellow-400'
+                    : (tx.type === 'plus' ? 'bg-green-950/40 border-green-900/30 text-green-400' : 'bg-red-950/40 border-red-900/30 text-red-400');
+                
                 return `
                     <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between">
                         <div class="space-y-0.5">
